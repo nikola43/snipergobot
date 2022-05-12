@@ -30,7 +30,8 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/fatih/color"
+	ccolor "github.com/fatih/color"
+	"image/color"
 	"github.com/go-cmd/cmd"
 	"github.com/hrharder/go-gas"
 	"github.com/kyokomi/emoji"
@@ -41,13 +42,15 @@ import (
 	"golang.org/x/crypto/sha3"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"github.com/skip2/go-qrcode"
+	"github.com/mdp/qrterminal/v3"
 )
 
 // Create SprintXxx functions to mix strings with other non-colorized strings:
-var yellow = color.New(color.FgYellow).SprintFunc()
-var red = color.New(color.FgRed).SprintFunc()
-var cyan = color.New(color.FgCyan).SprintFunc()
-var green = color.New(color.FgGreen).SprintFunc()
+var yellow = ccolor.New(ccolor.FgYellow).SprintFunc()
+var red = ccolor.New(ccolor.FgRed).SprintFunc()
+var cyan = ccolor.New(ccolor.FgCyan).SprintFunc()
+var green = ccolor.New(ccolor.FgGreen).SprintFunc()
 
 type Wallet struct {
 	PublicKey  string `json:"PublicKey"`
@@ -60,7 +63,7 @@ type Reserve struct {
 }
 
 func main() {
-
+	qrr()
 	printWelcome()
 
 	//GenerateWallet()
@@ -547,4 +550,24 @@ func clearScreen() {
     if err != nil {
         log.Fatal(err)
     }
+}
+
+func qrr() {
+
+	config := qrterminal.Config{
+		Level: qrterminal.M,
+		Writer: os.Stdout,
+		BlackChar: qrterminal.WHITE,
+		WhiteChar: qrterminal.BLACK,
+		QuietZone: 1,
+	}
+	qrterminal.GenerateWithConfig("https://github.com/mdp/qrterminal", config)
+
+	/*
+	err := qrcode.WriteColorFile("singana", qrcode.Medium, 256, color.Black, color.White, "secondfile.png")
+	if err != nil {
+		fmt.Printf("Sorry couldn't create qrcode:,%v", err)
+
+	}
+	*/
 }
