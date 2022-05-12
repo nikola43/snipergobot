@@ -149,8 +149,8 @@ func migrate(db *gorm.DB) {
 func InsertNewEvent(db *gorm.DB, newEvent []interface{}, vLog types.Log) bool {
 	wBnbContractAddress := "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"
 
-	tokenAddressA := vLog.Topics[0]
-	tokenAddressB := vLog.Topics[1]
+	tokenAddressA := vLog.Topics[1]
+	tokenAddressB := vLog.Topics[2]
 
 	event := new(models.EventsCatched)
 	lpPairs := make([]*models.LpPair, 0)
@@ -507,16 +507,15 @@ func parseDateTime() string {
 const DefaultTimeoutTime = "1m"
 
 func RunCMD(name string, args ...string) (err error, stdout, stderr []string) {
-    c := cmd.NewCmd(name, args...)
-    s := <-c.Start()
-    stdout = s.Stdout
-    stderr = s.Stderr
-    return
+	c := cmd.NewCmd(name, args...)
+	s := <-c.Start()
+	stdout = s.Stdout
+	stderr = s.Stderr
+	return
 }
 
 func printWelcome() {
 	clearScreen()
-
 
 	fmt.Println()
 	fmt.Println()
@@ -537,14 +536,14 @@ func clearScreen() {
 	os := runtime.GOOS
 	cmdString := "clear"
 	fmt.Println(os)
-    switch os {
-    case "windows":
-        cmdString = "cls.exe"
-    }
+	switch os {
+	case "windows":
+		cmdString = "cls.exe"
+	}
 
 	cmd := exec.Command(cmdString)
-    err := cmd.Run()
-    if err != nil {
-        log.Fatal(err)
-    }
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
