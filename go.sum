@@ -303,6 +303,8 @@ github.com/naoina/toml v0.1.2-0.20170918210437-9fafd6967416/go.mod h1:NBIhNtsFMo
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nikola43/web3golanghelper v0.0.0-20220512003142-10e37be6ad19 h1:tDM6sPWc3iCMFB7cXEX2lamRiZUsIvoIkFCXi6apSHI=
 github.com/nikola43/web3golanghelper v0.0.0-20220512003142-10e37be6ad19/go.mod h1:v9MPPBBBLDY4/PznLmkhMIEs75CVRhc1Ip5VXNgjgmc=
+github.com/nikola43/web3golanghelper v0.0.0-20220512222126-65bb94c4393e h1:9tO/F78FCH8WzrRyTqBx5+fBZKD02xVY7O0/GnjCQbQ=
+github.com/nikola43/web3golanghelper v0.0.0-20220512222126-65bb94c4393e/go.mod h1:z0J7nGq3DKjjtygFZeZu930kVEuOfwCOUS/RO5YGjR0=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=

@@ -3,13 +3,9 @@ package main
 import (
 	"buytokenspancakegolang/models"
 	"context"
-	"crypto/ecdsa"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/big"
-	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
@@ -20,18 +16,14 @@ import (
 	pancakeFactory "buytokenspancakegolang/contracts/IPancakeFactory"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	ccolor "github.com/fatih/color"
 	"github.com/go-cmd/cmd"
 	"github.com/kyokomi/emoji"
 	"github.com/mattn/go-colorable"
-	"github.com/mdp/qrterminal/v3"
 	"github.com/nikola43/web3golanghelper/web3helper"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/sha3"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -53,12 +45,9 @@ type Reserve struct {
 }
 
 func main() {
-	qrr()
 	printWelcome()
 
-	//GenerateWallet()
 	fmt.Println(parseDateTime())
-	getWallets()
 
 	// Declarations
 	web3GolangHelper := initWeb3()
@@ -75,7 +64,7 @@ func main() {
 func proccessEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, contractAddress string, contractAbi abi.ABI) {
 
 	logs := make(chan types.Log)
-	sub := web3GolangHelper.BuildContractEventSubscription(web3GolangHelper, contractAddress, logs)
+	sub := web3GolangHelper.BuildContractEventSubscription(contractAddress, logs)
 
 	for {
 		select {
@@ -193,7 +182,7 @@ func updateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelpe
 		fmt.Println(getNameErr)
 	}
 
-	reserves := web3GolangHelper.getReserves(token.TokenAddress)
+	reserves := web3GolangHelper.GetReserves(token.TokenAddress)
 	if reserves.Reserve0.Uint64() > web3helper.EtherToWei(big.NewFloat(0)).Uint64() {
 		UpdateLiquidity(db, token.ID)
 	}
@@ -230,70 +219,6 @@ func getPairLiquidityIcon(pair *models.LpPair) string {
 		icon = "🟢"
 	}
 	return icon
-}
-
-func GenerateWallet() {
-
-	privateKey, err := crypto.GenerateKey()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	privateKeyBytes := crypto.FromECDSA(privateKey)
-	fmt.Println(hexutil.Encode(privateKeyBytes)[2:]) // fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19
-
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-	}
-
-	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
-	fmt.Println(hexutil.Encode(publicKeyBytes)[4:]) // 9a7df67f79246283fdc93af76d4f8cdd62c4886e8cd870944e817dd0b97934fdd7719d0810951e03418205868a5c1b40b192451367f28e0088dd75e15de40c05
-
-	address := crypto.PubkeyToAddress(*publicKeyECDSA).Hex()
-	fmt.Println(address) // 0x96216849c49358B10257cb55b28eA603c874b05E
-
-	hash := sha3.NewLegacyKeccak256()
-	hash.Write(publicKeyBytes[1:])
-	fmt.Println(hexutil.Encode(hash.Sum(nil)[12:])) // 0x96216849c49358b10257cb55b28ea603c874b05e
-
-	wallet := Wallet{
-		PublicKey:  address,
-		PrivateKey: hexutil.Encode(privateKeyBytes)[2:],
-	}
-
-	file, _ := json.MarshalIndent(wallet, "", " ")
-	_ = ioutil.WriteFile("wallets/"+address+".json", file, 0644)
-}
-
-func getWallets() {
-	wallets := make([]Wallet, 0)
-
-	wPath := "./wallets"
-	files, err := ioutil.ReadDir(wPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, file := range files {
-		fileName := file.Name()
-		fmt.Println("fileName", fileName)
-
-		wallet := Wallet{
-			PublicKey:  "",
-			PrivateKey: "",
-		}
-
-		// Open our jsonFile
-		jsonFile, _ := os.Open(wPath + "/" + fileName)
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-		json.Unmarshal(byteValue, &wallet)
-		fmt.Println(wallet)
-		wallets = append(wallets, wallet)
-	}
-
-	fmt.Println(wallets)
 }
 
 func parseDateTime() string {
@@ -343,24 +268,4 @@ func clearScreen() {
 	if err != nil {
 		fmt.Println(cmd)
 	}
-}
-
-func qrr() {
-
-	config := qrterminal.Config{
-		Level:     qrterminal.M,
-		Writer:    os.Stdout,
-		BlackChar: qrterminal.WHITE,
-		WhiteChar: qrterminal.BLACK,
-		QuietZone: 1,
-	}
-	qrterminal.GenerateWithConfig("https://github.com/mdp/qrterminal", config)
-
-	/*
-		err := qrcode.WriteColorFile("singana", qrcode.Medium, 256, color.Black, color.White, "secondfile.png")
-		if err != nil {
-			fmt.Printf("Sorry couldn't create qrcode:,%v", err)
-
-		}
-	*/
 }

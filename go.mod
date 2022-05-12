@@ -9,7 +9,7 @@ require (
 	github.com/hrharder/go-gas v1.0.1
 	github.com/kyokomi/emoji v2.2.4+incompatible
 	github.com/mattn/go-colorable v0.1.12
-	github.com/nikola43/web3golanghelper v0.0.0-20220512003142-10e37be6ad19
+	github.com/nikola43/web3golanghelper v0.0.0-20220512222126-65bb94c4393e
 	github.com/samber/lo v1.21.0
 	github.com/sirupsen/logrus v1.2.0
 	golang.org/x/crypto v0.0.0-20220511200225-c6db032c6c88
