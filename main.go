@@ -13,6 +13,8 @@ import (
 	"log"
 	"math/big"
 	"os"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -29,7 +31,9 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/fatih/color"
+	"github.com/go-cmd/cmd"
 	"github.com/hrharder/go-gas"
+	"github.com/kyokomi/emoji"
 	"github.com/mattn/go-colorable"
 	"github.com/nikola43/web3golanghelper/web3helper"
 	"github.com/samber/lo"
@@ -56,6 +60,8 @@ type Reserve struct {
 }
 
 func main() {
+
+	printWelcome()
 
 	//GenerateWallet()
 	fmt.Println(parseDateTime())
@@ -496,4 +502,49 @@ func getWallets() {
 func parseDateTime() string {
 	now := time.Now()
 	return strconv.Itoa(now.Year()) + "/" + now.Month().String() + "/" + strconv.Itoa(now.Day()) + " " + strconv.Itoa(now.Hour()) + ":" + strconv.Itoa(now.Minute()) + ":" + strconv.Itoa(now.Second()) + ":" + strconv.Itoa(now.Nanosecond())
+}
+
+const DefaultTimeoutTime = "1m"
+
+func RunCMD(name string, args ...string) (err error, stdout, stderr []string) {
+    c := cmd.NewCmd(name, args...)
+    s := <-c.Start()
+    stdout = s.Stdout
+    stderr = s.Stderr
+    return
+}
+
+func printWelcome() {
+	clearScreen()
+
+
+	fmt.Println()
+	fmt.Println()
+	fmt.Printf("%s\n", red("██████╗░███████╗███╗░░░███╗███████╗███╗░░██╗████████╗░█████╗░██████╗░  ██╗░░░██╗░█████╗░░░░███████╗░░░██████╗░"))
+	fmt.Printf("%s\n", red("██╔══██╗██╔════╝████╗░████║██╔════╝████╗░██║╚══██╔══╝██╔══██╗██╔══██╗  ██║░░░██║██╔══██╗░░░██╔════╝░░░╚════██╗"))
+	fmt.Printf("%s\n", red("██║░░██║█████╗░░██╔████╔██║█████╗░░██╔██╗██║░░░██║░░░██║░░██║██████╔╝  ╚██╗░██╔╝╚██████║░░░██████╗░░░░░░███╔═╝"))
+	fmt.Printf("%s\n", red("██║░░██║██╔══╝░░██║╚██╔╝██║██╔══╝░░██║╚████║░░░██║░░░██║░░██║██╔══██╗  ░╚████╔╝░░╚═══██║░░░╚════██╗░░░██╔══╝░░"))
+	fmt.Printf("%s\n", red("██████╔╝███████╗██║░╚═╝░██║███████╗██║░╚███║░░░██║░░░╚█████╔╝██║░░██║  ░░╚██╔╝░░░█████╔╝██╗██████╔╝██╗███████╗"))
+	fmt.Printf("%s\n", red("╚═════╝░╚══════╝╚═╝░░░░░╚═╝╚══════╝╚═╝░░╚══╝░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝  ░░░╚═╝░░░░╚════╝░╚═╝╚═════╝░╚═╝╚══════╝"))
+	fmt.Println()
+	fmt.Println()
+
+	devMessage := emoji.Sprint("Developed with :heart: Mr. NoBody")
+	fmt.Println(devMessage)
+}
+
+func clearScreen() {
+	os := runtime.GOOS
+	cmdString := "clear"
+	fmt.Println(os)
+    switch os {
+    case "windows":
+        cmdString = "cls.exe"
+    }
+
+	cmd := exec.Command(cmdString)
+    err := cmd.Run()
+    if err != nil {
+        log.Fatal(err)
+    }
 }
