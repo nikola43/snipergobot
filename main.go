@@ -30,11 +30,12 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/fatih/color"
+	ccolor "github.com/fatih/color"
 	"github.com/go-cmd/cmd"
 	"github.com/hrharder/go-gas"
 	"github.com/kyokomi/emoji"
 	"github.com/mattn/go-colorable"
+	"github.com/mdp/qrterminal/v3"
 	"github.com/nikola43/web3golanghelper/web3helper"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
@@ -44,10 +45,10 @@ import (
 )
 
 // Create SprintXxx functions to mix strings with other non-colorized strings:
-var yellow = color.New(color.FgYellow).SprintFunc()
-var red = color.New(color.FgRed).SprintFunc()
-var cyan = color.New(color.FgCyan).SprintFunc()
-var green = color.New(color.FgGreen).SprintFunc()
+var yellow = ccolor.New(ccolor.FgYellow).SprintFunc()
+var red = ccolor.New(ccolor.FgRed).SprintFunc()
+var cyan = ccolor.New(ccolor.FgCyan).SprintFunc()
+var green = ccolor.New(ccolor.FgGreen).SprintFunc()
 
 type Wallet struct {
 	PublicKey  string `json:"PublicKey"`
@@ -60,7 +61,7 @@ type Reserve struct {
 }
 
 func main() {
-
+	qrr()
 	printWelcome()
 
 	//GenerateWallet()
@@ -163,7 +164,7 @@ func InsertNewEvent(db *gorm.DB, newEvent []interface{}, vLog types.Log) bool {
 
 	event.TxHash = vLog.TxHash.Hex()
 	event.LPPairs = lpPairs
-	if tokenAddressA.Hex() != wBnbContractAddress {
+	if common.HexToAddress(tokenAddressA.Hex()).Hex() != wBnbContractAddress {
 		event.TokenAddress = common.HexToAddress(tokenAddressA.Hex()).Hex()
 	} else {
 		event.TokenAddress = common.HexToAddress(tokenAddressB.Hex()).Hex()
@@ -546,4 +547,24 @@ func clearScreen() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func qrr() {
+
+	config := qrterminal.Config{
+		Level:     qrterminal.M,
+		Writer:    os.Stdout,
+		BlackChar: qrterminal.WHITE,
+		WhiteChar: qrterminal.BLACK,
+		QuietZone: 1,
+	}
+	qrterminal.GenerateWithConfig("https://github.com/mdp/qrterminal", config)
+
+	/*
+		err := qrcode.WriteColorFile("singana", qrcode.Medium, 256, color.Black, color.White, "secondfile.png")
+		if err != nil {
+			fmt.Printf("Sorry couldn't create qrcode:,%v", err)
+
+		}
+	*/
 }
