@@ -64,7 +64,7 @@ func main() {
 	// Declarations
 	web3GolangHelper := initWeb3()
 	db := InitDatabase()
-	//migrate(db)
+	migrate(db)
 	factoryAddress := "0xB7926C0430Afb07AA7DEfDE6DA862aE0Bde767bc"
 	factoryAbi, _ := abi.JSON(strings.NewReader(string(pancakeFactory.PancakeABI)))
 
@@ -150,17 +150,17 @@ func InsertNewEvent(db *gorm.DB, newEvent []interface{}, vLog types.Log) bool {
 	lpPairs := make([]*models.LpPair, 0)
 	lpPairs = append(lpPairs, &models.LpPair{
 		LPAddress:    newEvent[0].(common.Address).Hex(),
-		LPPairA:      tokenAddressA.String(),
-		LPPairB:      tokenAddressB.String(),
+		LPPairA:      common.HexToAddress(tokenAddressA.Hex()).Hex(),
+		LPPairB:      common.HexToAddress(tokenAddressB.Hex()).Hex(),
 		HasLiquidity: false,
 	})
 
 	event.TxHash = vLog.TxHash.Hex()
 	event.LPPairs = lpPairs
 	if tokenAddressA.Hex() != wBnbContractAddress {
-		event.TokenAddress = tokenAddressA.Hex()
+		event.TokenAddress = common.HexToAddress(tokenAddressA.Hex()).Hex()
 	} else {
-		event.TokenAddress = tokenAddressB.Hex()
+		event.TokenAddress = common.HexToAddress(tokenAddressB.Hex()).Hex()
 	}
 
 	db.Create(event)
