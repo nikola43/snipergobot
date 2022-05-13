@@ -29,11 +29,11 @@ import (
 	ccolor "github.com/fatih/color"
 	"github.com/go-cmd/cmd"
 	"github.com/kyokomi/emoji"
-	"github.com/mattn/go-colorable"
+	//"github.com/mattn/go-colorable"
 	"github.com/mdp/qrterminal"
 	"github.com/nikola43/web3golanghelper/web3helper"
 	"github.com/samber/lo"
-	"github.com/sirupsen/logrus"
+	//"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -62,10 +62,11 @@ var encryptionKey = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 3
 
 func main() {
 
-	checkLicense()
-	os.Exit(0)
+	//checkLicense()
+
 
 	printWelcome()
+	os.Exit(0)
 
 	fmt.Println(parseDateTime(time.Now()))
 
@@ -208,9 +209,9 @@ func updateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelpe
 }
 
 func printTokenStatus(token *models.EventsCatched) {
-	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
-	logrus.SetOutput(colorable.NewColorableStdout())
-	logrus.Info("TOKEN INFO")
+	//logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
+	//logrus.SetOutput(colorable.NewColorableStdout())
+	//logrus.Info("TOKEN INFO")
 
 	fmt.Printf("%s: %s\n", cyan("Token Address"), yellow(token.TokenAddress))
 	fmt.Printf("%s:\n", cyan("LP Pairs"))
@@ -258,17 +259,40 @@ func printWelcome() {
 
 	fmt.Println()
 	fmt.Println()
-	fmt.Printf("%s\n", red("██████╗░███████╗███╗░░░███╗███████╗███╗░░██╗████████╗░█████╗░██████╗░  ██╗░░░██╗░█████╗░░░░███████╗░░░██████╗░"))
-	fmt.Printf("%s\n", red("██╔══██╗██╔════╝████╗░████║██╔════╝████╗░██║╚══██╔══╝██╔══██╗██╔══██╗  ██║░░░██║██╔══██╗░░░██╔════╝░░░╚════██╗"))
-	fmt.Printf("%s\n", red("██║░░██║█████╗░░██╔████╔██║█████╗░░██╔██╗██║░░░██║░░░██║░░██║██████╔╝  ╚██╗░██╔╝╚██████║░░░██████╗░░░░░░███╔═╝"))
-	fmt.Printf("%s\n", red("██║░░██║██╔══╝░░██║╚██╔╝██║██╔══╝░░██║╚████║░░░██║░░░██║░░██║██╔══██╗  ░╚████╔╝░░╚═══██║░░░╚════██╗░░░██╔══╝░░"))
-	fmt.Printf("%s\n", red("██████╔╝███████╗██║░╚═╝░██║███████╗██║░╚███║░░░██║░░░╚█████╔╝██║░░██║  ░░╚██╔╝░░░█████╔╝██╗██████╔╝██╗███████╗"))
-	fmt.Printf("%s\n", red("╚═════╝░╚══════╝╚═╝░░░░░╚═╝╚══════╝╚═╝░░╚══╝░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝  ░░░╚═╝░░░░╚════╝░╚═╝╚═════╝░╚═╝╚══════╝"))
+	fmt.Printf("%s\n", red("\t██████╗░███████╗███╗░░░███╗███████╗███╗░░██╗████████╗░█████╗░██████╗░  ██╗░░░██╗░█████╗░░░░███████╗░░░██████╗░"))
+	fmt.Printf("%s\n", red("\t██╔══██╗██╔════╝████╗░████║██╔════╝████╗░██║╚══██╔══╝██╔══██╗██╔══██╗  ██║░░░██║██╔══██╗░░░██╔════╝░░░╚════██╗"))
+	fmt.Printf("%s\n", red("\t██║░░██║█████╗░░██╔████╔██║█████╗░░██╔██╗██║░░░██║░░░██║░░██║██████╔╝  ╚██╗░██╔╝╚██████║░░░██████╗░░░░░░███╔═╝"))
+	fmt.Printf("%s\n", red("\t██║░░██║██╔══╝░░██║╚██╔╝██║██╔══╝░░██║╚████║░░░██║░░░██║░░██║██╔══██╗  ░╚████╔╝░░╚═══██║░░░╚════██╗░░░██╔══╝░░"))
+	fmt.Printf("%s\n", red("\t██████╔╝███████╗██║░╚═╝░██║███████╗██║░╚███║░░░██║░░░╚█████╔╝██║░░██║  ░░╚██╔╝░░░█████╔╝██╗██████╔╝██╗███████╗"))
+	fmt.Printf("%s\n", red("\t╚═════╝░╚══════╝╚═╝░░░░░╚═╝╚══════╝╚═╝░░╚══╝░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝  ░░░╚═╝░░░░╚════╝░╚═╝╚═════╝░╚═╝╚══════╝"))
 	fmt.Println()
 	fmt.Println()
 
-	devMessage := emoji.Sprint("Developed with :smiling_imp:By Mr. Nobody")
-	fmt.Println(devMessage)
+	devMessage := emoji.Sprint("\t\t\t\t\t\tDeveloped with :smiling_imp:By Mr. Nobody")
+	fmt.Printf("%s\n", red(devMessage))
+	fmt.Println()
+	fmt.Println()
+
+	printMainMenu()
+}
+
+func printLoginMenu() {
+	fmt.Printf("\t%s\n", cyan("Login"))
+	fmt.Printf("\t%s: %s\n", cyan("1. "), yellow("Import wallet using private key"))
+	fmt.Printf("\t%s: %s\n", cyan("2. "), yellow("Import wallet using wallet file"))
+	fmt.Printf("\t%s: %s\n", cyan("3. "), yellow("Import wallet using Wallet connnect"))
+}
+
+func printAccounts() {
+	fmt.Printf("\t%s\n", cyan("Accounts"))
+	fmt.Printf("\t%s: %s\n", cyan("1. "), yellow("Generate new wallet file"))
+	fmt.Printf("\t%s: %s\n", cyan("2. "), yellow("Show wallets files"))
+}
+
+func printMainMenu() {
+	fmt.Printf("%s\n", red("\tMAIN MENU"))
+	fmt.Printf("\t%s: %s\n", cyan("1"), yellow("Init Sniper"))
+	fmt.Printf("\t%s: %s\n", cyan("2"), yellow("Manage wallets"))
 }
 
 func clearScreen() {
