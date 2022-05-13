@@ -36,11 +36,11 @@ func NewSysInfo() *SysInfo{
     return info
 }
 
-func (sysInfo *SysInfo) toString() string {
+func (sysInfo *SysInfo) ToString() string {
     return sysInfo.Hostname + ","+ sysInfo.Platform  + ","+ sysInfo.CPU + ","+ strconv.FormatUint(sysInfo.RAM, 10) +","+ strconv.FormatUint(sysInfo.Disk, 10)
 }
 
-func (sysInfo *SysInfo) toHash() string {
+func (sysInfo *SysInfo) ToHash() string {
     Hostname := hashValue(sysInfo.Hostname)
     Platform :=  hashValue(sysInfo.Platform)
     CPU :=  hashValue(sysInfo.CPU)

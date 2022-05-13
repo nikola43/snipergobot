@@ -17,7 +17,9 @@ require (
 
 require (
 	github.com/hrharder/go-gas v1.0.1 // indirect
+	github.com/mdp/qrterminal v1.0.1 // indirect
 	golang.org/x/crypto v0.0.0-20220511200225-c6db032c6c88 // indirect
+	rsc.io/qr v0.2.0 // indirect
 )
 
 require (

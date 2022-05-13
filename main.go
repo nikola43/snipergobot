@@ -6,8 +6,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/base64"
+	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
@@ -29,6 +30,7 @@ import (
 	"github.com/go-cmd/cmd"
 	"github.com/kyokomi/emoji"
 	"github.com/mattn/go-colorable"
+	"github.com/mdp/qrterminal"
 	"github.com/nikola43/web3golanghelper/web3helper"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
@@ -52,24 +54,20 @@ type Reserve struct {
 	BlockTimestampLast uint32
 }
 
-//var randomBytes = []byte{0,0,0,0}
-var randomBytes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
+const (
+	keyFile = "aes.key"
+)
+
+var encryptionKey = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
 
 func main() {
 
-	info := sysinfo.NewSysInfo()
-	fmt.Printf("%+v\n", info)
-
-	//randomBytes = make([]byte, 4)
-	rand.Read(randomBytes)
-	fmt.Println(randomBytes)
-
-	saveLicense()
+	checkLicense()
 	os.Exit(0)
 
 	printWelcome()
 
-	fmt.Println(parseDateTime())
+	fmt.Println(parseDateTime(time.Now()))
 
 	// Declarations
 	web3GolangHelper := initWeb3()
@@ -186,7 +184,6 @@ func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper) {
 		printTokenStatus(element)
 		updateTokenStatus(db, web3GolangHelper, element)
 	})
-
 }
 
 func updateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, token *models.EventsCatched) {
@@ -242,8 +239,7 @@ func getPairLiquidityIcon(pair *models.LpPair) string {
 	return icon
 }
 
-func parseDateTime() string {
-	now := time.Now()
+func parseDateTime(now time.Time) string {
 	return strconv.Itoa(now.Year()) + "/" + now.Month().String() + "/" + strconv.Itoa(now.Day()) + " " + strconv.Itoa(now.Hour()) + ":" + strconv.Itoa(now.Minute()) + ":" + strconv.Itoa(now.Second()) + ":" + strconv.Itoa(now.Nanosecond())
 }
 
@@ -291,63 +287,131 @@ func clearScreen() {
 	}
 }
 
-func saveLicense() {
-
-	// This should be in an env file in production
-	const MySecret string = "abc&1*~#^2^#s0^=)^^7%b34"
-
-	StringToEncrypt := "Encrypting this string"
-	// To encrypt the StringToEncrypt
-	encText, err := Encrypt(StringToEncrypt, MySecret)
-	if err != nil {
-		fmt.Println("error encrypting your classified text: ", err)
-	}
-	fmt.Println(encText)
-	// To decrypt the original StringToEncrypt
-	decText, err := Decrypt(encText, MySecret)
-	if err != nil {
-		fmt.Println("error decrypting your encrypted text: ", err)
-	}
-	fmt.Println("dec", decText)
+func saveLicense(plainData string, filename string) {
+	//rand.Read(encryptionKey)
+	fmt.Println(encryptionKey)
+	encryption(plainData, filename)
 }
 
 func checkLicense() {
+	fileName := "licence.dat"
+	if !fileExist(fileName) {
+		fmt.Printf("%s:", cyan("Lincense file not found"))
 
-}
+		now := time.Now()
+		licenceEndDate := now.AddDate(0, 0, 5)
 
-func Encode(b []byte) string {
-	return base64.StdEncoding.EncodeToString(b)
-}
-func Decode(s string) []byte {
-	data, err := base64.StdEncoding.DecodeString(s)
-	if err != nil {
-		panic(err)
+		fmt.Println("now", parseDateTime(now))
+		fmt.Println("licenceEndDate", parseDateTime(licenceEndDate))
+
+		info := sysinfo.NewSysInfo()
+		fmt.Printf("%+s\n", info.ToHash())
+		saveLicense(info.ToHash(), fileName)
+
+	} else {
+		fmt.Printf("%v file exist\n", fileName)
+		fmt.Printf("Decrypted Msg : %s", decryption(fileName))
+
+		isLicenceValid := true
+		if isLicenceValid {
+			fmt.Println()
+			showPaymentQr()
+			fmt.Println()
+			fmt.Printf("%s: %s\n", cyan("Send 1 ETH To"), yellow("0x6d5F00aE01F715D3082Ad40dfB5c18A1a35d3A17"))
+			fmt.Printf("%s\n", cyan("You will receive email with API KEY after our system process payment"))
+			fmt.Println()
+		}
 	}
-	return data
 }
 
-// Encrypt method is to encrypt or hide any classified text
-func Encrypt(text, MySecret string) (string, error) {
-	block, err := aes.NewCipher([]byte(MySecret))
-	if err != nil {
-		return "", err
+func showPaymentQr() {
+	const RED = "\033[44m  \033[0m"
+	const BLUE = "\033[43m  \033[0m"
+
+	config := qrterminal.Config{
+		Level:     qrterminal.M,
+		Writer:    os.Stdout,
+		BlackChar: RED,
+		WhiteChar: BLUE,
+		QuietZone: 1,
 	}
-	plainText := []byte(text)
-	cfb := cipher.NewCFBEncrypter(block, randomBytes)
-	cipherText := make([]byte, len(plainText))
-	cfb.XORKeyStream(cipherText, plainText)
-	return Encode(cipherText), nil
+	qrterminal.GenerateWithConfig("0x6d5F00aE01F715D3082Ad40dfB5c18A1a35d3A17", config)
 }
 
-// Decrypt method is to extract back the encrypted text
-func Decrypt(text, MySecret string) (string, error) {
-	block, err := aes.NewCipher([]byte(MySecret))
-	if err != nil {
-		return "", err
+func fileExist(filename string) bool {
+	_, error := os.Stat(filename)
+	if os.IsNotExist(error) {
+		return false
+	} else {
+		return true
 	}
-	cipherText := Decode(text)
-	cfb := cipher.NewCFBDecrypter(block, randomBytes)
-	plainText := make([]byte, len(cipherText))
-	cfb.XORKeyStream(plainText, cipherText)
-	return string(plainText), nil
+}
+
+func rKey(filename string) ([]byte, error) {
+	key, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return key, err
+	}
+	block, _ := pem.Decode(key)
+	return block.Bytes, nil
+}
+
+func cKey() []byte {
+	genkey := make([]byte, 16)
+	_, err := rand.Read(genkey)
+	if err != nil {
+		log.Fatalf("failed to read key: %s", err)
+	}
+	return genkey
+}
+
+func sKey(filename string, key []byte) {
+	block := &pem.Block{
+		Type:  "AES KEY",
+		Bytes: key,
+	}
+	err := ioutil.WriteFile(filename, pem.EncodeToMemory(block), 9854)
+	if err != nil {
+		log.Fatalf("Failed tio save the key %s: %s", filename, err)
+	}
+}
+
+func aesKey() []byte {
+	file := fmt.Sprintf(keyFile)
+	key, err := rKey(file)
+	if err != nil {
+		log.Println("Create a new AES KEY")
+		key = cKey()
+		sKey(file, key)
+	}
+	return key
+}
+
+func createCipher() cipher.Block {
+	c, err := aes.NewCipher(aesKey())
+	if err != nil {
+		log.Fatalf("failed to create aes  %s", err)
+	}
+	return c
+}
+
+func encryption(plainText string, filename string) {
+	bytes := []byte(plainText)
+	blockCipher := createCipher()
+	stream := cipher.NewCTR(blockCipher, encryptionKey)
+	stream.XORKeyStream(bytes, bytes)
+	err := ioutil.WriteFile(fmt.Sprintf(filename), bytes, 0644)
+	if err != nil {
+		log.Fatalf("writing encryption file %s", err)
+	}
+}
+func decryption(filename string) []byte {
+	bytes, err := ioutil.ReadFile(fmt.Sprintf(filename))
+	if err != nil {
+		log.Fatalf("Reading encrypted file %s", err)
+	}
+	blockCipher := createCipher()
+	stream := cipher.NewCTR(blockCipher, encryptionKey)
+	stream.XORKeyStream(bytes, bytes)
+	return bytes
 }
