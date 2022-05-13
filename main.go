@@ -3,9 +3,14 @@ package main
 import (
 	"buytokenspancakegolang/models"
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"math/big"
+	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
@@ -14,6 +19,7 @@ import (
 
 	ierc20 "buytokenspancakegolang/contracts/IERC20"
 	pancakeFactory "buytokenspancakegolang/contracts/IPancakeFactory"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -26,6 +32,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	sysinfo "buytokenspancakegolang/sysinfo/sysinfo"
 )
 
 // Create SprintXxx functions to mix strings with other non-colorized strings:
@@ -33,6 +40,9 @@ var yellow = ccolor.New(ccolor.FgYellow).SprintFunc()
 var red = ccolor.New(ccolor.FgRed).SprintFunc()
 var cyan = ccolor.New(ccolor.FgCyan).SprintFunc()
 var green = ccolor.New(ccolor.FgGreen).SprintFunc()
+
+
+
 
 type Wallet struct {
 	PublicKey  string `json:"PublicKey"`
@@ -44,7 +54,23 @@ type Reserve struct {
 	BlockTimestampLast uint32
 }
 
+//var randomBytes = []byte{0,0,0,0}
+var randomBytes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
+
+
 func main() {
+
+	info := sysinfo.newSysInfo()
+    fmt.Printf("%+v\n", info)
+
+	//randomBytes = make([]byte, 4)
+	rand.Read(randomBytes)
+	fmt.Println(randomBytes)
+
+
+	saveLicense()
+	os.Exit(0)
+
 	printWelcome()
 
 	fmt.Println(parseDateTime())
@@ -98,7 +124,6 @@ func initWeb3() *web3helper.Web3GolangHelper {
 	fmt.Println("Chain Id: " + chainID.String())
 	return web3GolangHelper
 }
-
 
 func InitDatabase() *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
@@ -268,4 +293,70 @@ func clearScreen() {
 	if err != nil {
 		fmt.Println(cmd)
 	}
+}
+
+func saveLicense() {
+
+	info := getsysteminformationgolang.newSysInfo()
+    fmt.Printf("%+v\n", info)
+	fmt.Printf("%+s\n", info.toString())
+	fmt.Printf("%+s\n", info.toHash())
+
+	// This should be in an env file in production
+	const MySecret string = "abc&1*~#^2^#s0^=)^^7%b34"
+
+	StringToEncrypt := "Encrypting this string"
+	// To encrypt the StringToEncrypt
+	encText, err := Encrypt(StringToEncrypt, MySecret)
+	if err != nil {
+		fmt.Println("error encrypting your classified text: ", err)
+	}
+	fmt.Println(encText)
+	// To decrypt the original StringToEncrypt
+	decText, err := Decrypt(encText, MySecret)
+	if err != nil {
+		fmt.Println("error decrypting your encrypted text: ", err)
+	}
+	fmt.Println("dec", decText)
+}
+
+func checkLicense() {
+	
+}
+
+func Encode(b []byte) string {
+	return base64.StdEncoding.EncodeToString(b)
+}
+func Decode(s string) []byte {
+	data, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+// Encrypt method is to encrypt or hide any classified text
+func Encrypt(text, MySecret string) (string, error) {
+	block, err := aes.NewCipher([]byte(MySecret))
+	if err != nil {
+		return "", err
+	}
+	plainText := []byte(text)
+	cfb := cipher.NewCFBEncrypter(block, randomBytes)
+	cipherText := make([]byte, len(plainText))
+	cfb.XORKeyStream(cipherText, plainText)
+	return Encode(cipherText), nil
+}
+
+// Decrypt method is to extract back the encrypted text
+func Decrypt(text, MySecret string) (string, error) {
+	block, err := aes.NewCipher([]byte(MySecret))
+	if err != nil {
+		return "", err
+	}
+	cipherText := Decode(text)
+	cfb := cipher.NewCFBDecrypter(block, randomBytes)
+	plainText := make([]byte, len(cipherText))
+	cfb.XORKeyStream(plainText, cipherText)
+	return string(plainText), nil
 }

@@ -17,7 +17,10 @@ require (
 	gorm.io/gorm v1.23.5
 )
 
-require rsc.io/qr v0.2.0 // indirect
+require (
+	github.com/nikola43/getsysteminformationgolang/sysinfo v0.0.0-20220513005658-70e75e65fbc3 // indirect
+	rsc.io/qr v0.2.0 // indirect
+)
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect

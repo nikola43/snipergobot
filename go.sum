@@ -301,6 +301,8 @@ github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRW
 github.com/naoina/go-stringutil v0.1.0/go.mod h1:XJ2SJL9jCtBh+P9q5btrd/Ylo8XwT/h1USek5+NqSA0=
 github.com/naoina/toml v0.1.2-0.20170918210437-9fafd6967416/go.mod h1:NBIhNtsFMo3G2szEBne+bO4gS192HuIYRqfvOWb4i1E=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
+github.com/nikola43/getsysteminformationgolang/sysinfo v0.0.0-20220513005658-70e75e65fbc3 h1:WxEvyg/zz82LHELQ5Aeem1hgSeAcfMblnXDLn9TmItk=
+github.com/nikola43/getsysteminformationgolang/sysinfo v0.0.0-20220513005658-70e75e65fbc3/go.mod h1:LzUPjdTRsTscEGgatc1pzxiRXD3q31iGeXGDeKtw2Ow=
 github.com/nikola43/web3golanghelper v0.0.0-20220512003142-10e37be6ad19 h1:tDM6sPWc3iCMFB7cXEX2lamRiZUsIvoIkFCXi6apSHI=
 github.com/nikola43/web3golanghelper v0.0.0-20220512003142-10e37be6ad19/go.mod h1:v9MPPBBBLDY4/PznLmkhMIEs75CVRhc1Ip5VXNgjgmc=
 github.com/nikola43/web3golanghelper v0.0.0-20220512222126-65bb94c4393e h1:9tO/F78FCH8WzrRyTqBx5+fBZKD02xVY7O0/GnjCQbQ=
