@@ -20,7 +20,7 @@ type SysInfo struct {
     Disk     uint64 `bson:disk`
 }
 
-func newSysInfo() *SysInfo{
+func NewSysInfo() *SysInfo{
     hostStat, _ := host.Info()
     cpuStat, _ := cpu.Info()
     vmStat, _ := mem.VirtualMemory()

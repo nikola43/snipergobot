@@ -20,6 +20,8 @@ import (
 	ierc20 "buytokenspancakegolang/contracts/IERC20"
 	pancakeFactory "buytokenspancakegolang/contracts/IPancakeFactory"
 
+	sysinfo "buytokenspancakegolang/sysinfo"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -32,7 +34,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	sysinfo "buytokenspancakegolang/sysinfo/sysinfo"
 )
 
 // Create SprintXxx functions to mix strings with other non-colorized strings:
@@ -40,9 +41,6 @@ var yellow = ccolor.New(ccolor.FgYellow).SprintFunc()
 var red = ccolor.New(ccolor.FgRed).SprintFunc()
 var cyan = ccolor.New(ccolor.FgCyan).SprintFunc()
 var green = ccolor.New(ccolor.FgGreen).SprintFunc()
-
-
-
 
 type Wallet struct {
 	PublicKey  string `json:"PublicKey"`
@@ -57,16 +55,14 @@ type Reserve struct {
 //var randomBytes = []byte{0,0,0,0}
 var randomBytes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
 
-
 func main() {
 
-	info := sysinfo.newSysInfo()
-    fmt.Printf("%+v\n", info)
+	info := sysinfo.NewSysInfo()
+	fmt.Printf("%+v\n", info)
 
 	//randomBytes = make([]byte, 4)
 	rand.Read(randomBytes)
 	fmt.Println(randomBytes)
-
 
 	saveLicense()
 	os.Exit(0)
@@ -297,11 +293,6 @@ func clearScreen() {
 
 func saveLicense() {
 
-	info := getsysteminformationgolang.newSysInfo()
-    fmt.Printf("%+v\n", info)
-	fmt.Printf("%+s\n", info.toString())
-	fmt.Printf("%+s\n", info.toHash())
-
 	// This should be in an env file in production
 	const MySecret string = "abc&1*~#^2^#s0^=)^^7%b34"
 
@@ -321,7 +312,7 @@ func saveLicense() {
 }
 
 func checkLicense() {
-	
+
 }
 
 func Encode(b []byte) string {
