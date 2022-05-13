@@ -29,10 +29,12 @@ import (
 	ccolor "github.com/fatih/color"
 	"github.com/go-cmd/cmd"
 	"github.com/kyokomi/emoji"
+
 	//"github.com/mattn/go-colorable"
 	"github.com/mdp/qrterminal"
 	"github.com/nikola43/web3golanghelper/web3helper"
 	"github.com/samber/lo"
+
 	//"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -63,7 +65,6 @@ var encryptionKey = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 3
 func main() {
 
 	//checkLicense()
-
 
 	printWelcome()
 	os.Exit(0)
@@ -273,7 +274,27 @@ func printWelcome() {
 	fmt.Println()
 	fmt.Println()
 
-	printMainMenu()
+	valid := false
+	mainMenuOption := "1"
+
+	for ok := true; ok; ok = !valid {
+		printMainMenu()
+		mainMenuOption = readFromKeyBoard("Select any option: ")
+		valid = mainMenuOption == "1"
+		if !valid {
+			fmt.Printf("\n%s\n", red("Invalid option"))
+		}
+	}
+	fmt.Println("You select " + mainMenuOption)
+}
+
+func readFromKeyBoard(text string) string {
+    var data string
+
+    fmt.Print(text+": ")
+    fmt.Scanf("%s", &data)
+
+	return data
 }
 
 func printLoginMenu() {
