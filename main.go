@@ -64,10 +64,10 @@ var encryptionKey = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 3
 
 func main() {
 
-	//checkLicense()
+	checkLicense()
 
-	printWelcome()
-	os.Exit(0)
+	//printWelcome()
+	//os.Exit(0)
 
 	fmt.Println(parseDateTime(time.Now()))
 
@@ -96,6 +96,7 @@ func proccessEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, 
 
 		case vLog := <-logs:
 			fmt.Println("vLog.TxHash: " + vLog.TxHash.Hex())
+
 			res, err := contractAbi.Unpack("PairCreated", vLog.Data)
 			if err != nil {
 				log.Fatal(err)
