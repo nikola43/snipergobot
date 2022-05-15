@@ -65,21 +65,22 @@ var encryptionKey = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 3
 func main() {
 
 	//checkLicense()
-
+	dirExist("wallets")
 	printWelcome()
-	os.Exit(0)
+
+	mainProgram()
 
 	fmt.Println(parseDateTime(time.Now()))
 
 	// Declarations
 	web3GolangHelper := initWeb3()
 	db := InitDatabase()
-	migrate(db)
+	//migrate(db)
 	factoryAddress := "0xB7926C0430Afb07AA7DEfDE6DA862aE0Bde767bc"
 	factoryAbi, _ := abi.JSON(strings.NewReader(string(pancakeFactory.PancakeABI)))
 
 	// LOGIC -----------------------------------------------------------
-	checkTokens(db, web3GolangHelper)
+
 	proccessEvents(db, web3GolangHelper, factoryAddress, factoryAbi)
 }
 
@@ -89,6 +90,7 @@ func proccessEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, 
 	sub := web3GolangHelper.BuildContractEventSubscription(contractAddress, logs)
 
 	for {
+		checkTokens(db, web3GolangHelper)
 		select {
 		case err := <-sub.Err():
 			fmt.Println(err)
@@ -96,6 +98,7 @@ func proccessEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, 
 
 		case vLog := <-logs:
 			fmt.Println("vLog.TxHash: " + vLog.TxHash.Hex())
+
 			res, err := contractAbi.Unpack("PairCreated", vLog.Data)
 			if err != nil {
 				log.Fatal(err)
@@ -167,29 +170,28 @@ func InsertNewEvent(db *gorm.DB, newEvent []interface{}, vLog types.Log) bool {
 
 func UpdateLiquidity(db *gorm.DB, eventID uint) bool {
 	lpPair := new(models.LpPair)
-	db.Where(&lpPair, "events_catched_id = ?", eventID).Update("has_liquidity", 1)
+	db.Model(&lpPair).Where("events_catched_id = ?", eventID).Update("has_liquidity", 1)
 
 	return true
 }
 
 func UpdateName(db *gorm.DB, token string, name string) bool {
 	event := new(models.EventsCatched)
-	db.Where(&event, "token_address = ?", token).Update("token_name", 1)
-
+	db.Model(&event).Where("token_address = ?", token).Where("token_name != ?", name).Update("token_name", name)
 	return true
 }
 
 func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper) {
 	events := make([]*models.EventsCatched, 0)
-	db.Find(&events)
+	db.Joins("INNER JOIN lp_pairs ON lp_pairs.events_catched_id = events_catcheds.id").Where("lp_pairs.has_liquidity = ?", 0).Preload("LPPairs").Find(&events)
+
 	lo.ForEach(events, func(element *models.EventsCatched, _ int) {
-		printTokenStatus(element)
+		//printTokenStatus(element)
 		updateTokenStatus(db, web3GolangHelper, element)
 	})
 }
 
 func updateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, token *models.EventsCatched) {
-
 	// create pancakeRouter pancakeRouterInstance
 	tokenContractInstance, instanceErr := ierc20.NewPancake(common.HexToAddress(token.TokenAddress), web3GolangHelper.HttpClient())
 	if instanceErr != nil {
@@ -197,13 +199,13 @@ func updateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelpe
 	}
 
 	tokenName, getNameErr := tokenContractInstance.Name(nil)
-	if getNameErr != nil {
+	if getNameErr == nil {
 		UpdateName(db, token.TokenAddress, tokenName)
-		fmt.Println(getNameErr)
 	}
-
-	reserves := web3GolangHelper.GetReserves(token.TokenAddress)
-	if reserves.Reserve0.Uint64() > web3helper.EtherToWei(big.NewFloat(0)).Uint64() {
+	fmt.Println(tokenName)
+	reserves := web3GolangHelper.GetReserves(token.LPPairs[0].LPAddress)
+	if reserves.BlockTimestampLast != 0 {
+		fmt.Println(reserves)
 		UpdateLiquidity(db, token.ID)
 	}
 
@@ -274,25 +276,51 @@ func printWelcome() {
 	fmt.Println()
 	fmt.Println()
 
+	// valid := false
+	// mainMenuOption := "1"
+
+	// for ok := true; ok; ok = !valid {
+	// 	printMainMenu()
+	// 	mainMenuOption = readFromKeyBoard("Select any option: ")
+	// 	valid = mainMenuOption == "1" || mainMenuOption == "2" || mainMenuOption == "3"
+	// 	if !valid {
+	// 		fmt.Printf("\n%s\n", red("Invalid option"))
+	// 	} else if mainMenuOption == "1" {
+	// 		printAccounts()
+	// 	} else if mainMenuOption == "2" {
+	// 		printLoginMenu()
+	// 	}
+	// }
+	// fmt.Println("You select " + mainMenuOption)
+}
+
+func mainProgram() {
 	valid := false
 	mainMenuOption := "1"
 
 	for ok := true; ok; ok = !valid {
 		printMainMenu()
 		mainMenuOption = readFromKeyBoard("Select any option: ")
-		valid = mainMenuOption == "1"
+		valid = mainMenuOption == "1" || mainMenuOption == "2" || mainMenuOption == "3" || mainMenuOption == "4"
 		if !valid {
 			fmt.Printf("\n%s\n", red("Invalid option"))
+		} else if mainMenuOption == "1" {
+			printAccounts()
+		} else if mainMenuOption == "2" {
+			printLoginMenu()
+		} else if mainMenuOption == "4" {
+			showPaymentQr()
 		}
 	}
 	fmt.Println("You select " + mainMenuOption)
+	mainMenuOption = "0"
 }
 
 func readFromKeyBoard(text string) string {
-    var data string
+	var data string
 
-    fmt.Print(text+": ")
-    fmt.Scanf("%s", &data)
+	fmt.Print(text + ": ")
+	fmt.Scanf("%s", &data)
 
 	return data
 }
@@ -308,12 +336,33 @@ func printAccounts() {
 	fmt.Printf("\t%s\n", cyan("Accounts"))
 	fmt.Printf("\t%s: %s\n", cyan("1. "), yellow("Generate new wallet file"))
 	fmt.Printf("\t%s: %s\n", cyan("2. "), yellow("Show wallets files"))
+	fmt.Printf("\t%s: %s\n", cyan("3. "), yellow("Return back"))
+
+	valid := false
+	accountMenuOption := "1"
+
+	for ok := true; ok; ok = !valid {
+		accountMenuOption = readFromKeyBoard("Select any option: ")
+		valid = accountMenuOption == "1" || accountMenuOption == "2" || accountMenuOption == "3"
+		if !valid {
+			fmt.Printf("\n%s\n", red("Invalid option"))
+		} else if accountMenuOption == "1" {
+			printAccounts()
+		} else if accountMenuOption == "2" {
+			printLoginMenu()
+		} else if accountMenuOption == "3" {
+			mainProgram()
+		}
+	}
+	fmt.Println("You select " + accountMenuOption)
 }
 
 func printMainMenu() {
 	fmt.Printf("%s\n", red("\tMAIN MENU"))
-	fmt.Printf("\t%s: %s\n", cyan("1"), yellow("Init Sniper"))
-	fmt.Printf("\t%s: %s\n", cyan("2"), yellow("Manage wallets"))
+	fmt.Printf("\t%s: %s\n", cyan("1"), yellow("Manage accounts"))
+	fmt.Printf("\t%s: %s\n", cyan("2"), yellow("Login"))
+	fmt.Printf("\t%s: %s\n", cyan("3"), yellow("Init Sniper"))
+	fmt.Printf("\t%s: %s\n", cyan("4"), yellow("Show Payment QR"))
 }
 
 func clearScreen() {
@@ -381,6 +430,20 @@ func showPaymentQr() {
 		QuietZone: 1,
 	}
 	qrterminal.GenerateWithConfig("0x6d5F00aE01F715D3082Ad40dfB5c18A1a35d3A17", config)
+
+	mainProgram()
+}
+
+func dirExist(dirname string) bool {
+	_, error := os.Stat(dirname)
+	if os.IsNotExist(error) {
+		if err := os.Mkdir(dirname, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+		return true
+	} else {
+		return true
+	}
 }
 
 func fileExist(filename string) bool {
