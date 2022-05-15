@@ -69,6 +69,8 @@ func main() {
 	printWelcome()
 
 	mainProgram()
+	//printWelcome()
+	//os.Exit(0)
 
 	fmt.Println(parseDateTime(time.Now()))
 
@@ -80,7 +82,6 @@ func main() {
 	factoryAbi, _ := abi.JSON(strings.NewReader(string(pancakeFactory.PancakeABI)))
 
 	// LOGIC -----------------------------------------------------------
-
 	proccessEvents(db, web3GolangHelper, factoryAddress, factoryAbi)
 }
 
@@ -171,7 +172,6 @@ func InsertNewEvent(db *gorm.DB, newEvent []interface{}, vLog types.Log) bool {
 func UpdateLiquidity(db *gorm.DB, eventID uint) bool {
 	lpPair := new(models.LpPair)
 	db.Model(&lpPair).Where("events_catched_id = ?", eventID).Update("has_liquidity", 1)
-
 	return true
 }
 
@@ -184,7 +184,6 @@ func UpdateName(db *gorm.DB, token string, name string) bool {
 func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper) {
 	events := make([]*models.EventsCatched, 0)
 	db.Joins("INNER JOIN lp_pairs ON lp_pairs.events_catched_id = events_catcheds.id").Where("lp_pairs.has_liquidity = ?", 0).Preload("LPPairs").Find(&events)
-
 	lo.ForEach(events, func(element *models.EventsCatched, _ int) {
 		//printTokenStatus(element)
 		updateTokenStatus(db, web3GolangHelper, element)
@@ -192,6 +191,7 @@ func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper) {
 }
 
 func updateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, token *models.EventsCatched) {
+
 	// create pancakeRouter pancakeRouterInstance
 	tokenContractInstance, instanceErr := ierc20.NewPancake(common.HexToAddress(token.TokenAddress), web3GolangHelper.HttpClient())
 	if instanceErr != nil {
@@ -201,11 +201,11 @@ func updateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelpe
 	tokenName, getNameErr := tokenContractInstance.Name(nil)
 	if getNameErr == nil {
 		UpdateName(db, token.TokenAddress, tokenName)
+		fmt.Println(getNameErr)
 	}
-	fmt.Println(tokenName)
-	reserves := web3GolangHelper.GetReserves(token.LPPairs[0].LPAddress)
+
+	reserves := web3GolangHelper.GetReserves(token.TokenAddress)
 	if reserves.BlockTimestampLast != 0 {
-		fmt.Println(reserves)
 		UpdateLiquidity(db, token.ID)
 	}
 
@@ -282,13 +282,9 @@ func printWelcome() {
 	// for ok := true; ok; ok = !valid {
 	// 	printMainMenu()
 	// 	mainMenuOption = readFromKeyBoard("Select any option: ")
-	// 	valid = mainMenuOption == "1" || mainMenuOption == "2" || mainMenuOption == "3"
+	// 	valid = mainMenuOption == "1"
 	// 	if !valid {
 	// 		fmt.Printf("\n%s\n", red("Invalid option"))
-	// 	} else if mainMenuOption == "1" {
-	// 		printAccounts()
-	// 	} else if mainMenuOption == "2" {
-	// 		printLoginMenu()
 	// 	}
 	// }
 	// fmt.Println("You select " + mainMenuOption)
@@ -430,7 +426,6 @@ func showPaymentQr() {
 		QuietZone: 1,
 	}
 	qrterminal.GenerateWithConfig("0x6d5F00aE01F715D3082Ad40dfB5c18A1a35d3A17", config)
-
 	mainProgram()
 }
 
