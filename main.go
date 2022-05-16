@@ -65,10 +65,21 @@ var encryptionKey = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 3
 func main() {
 
 	//checkLicense()
-	dirExist("wallets")
+	createWalletFolder("wallets")
 	printWelcome()
 
-	mainProgram()
+	selectedMainMenuOption := mainProgram()
+	if selectedMainMenuOption == "0" {
+		
+	} else 	if selectedMainMenuOption == "1" {
+		
+	} else 	if selectedMainMenuOption == "2" {
+		
+	} else {
+
+	}
+
+
 	//printWelcome()
 	//os.Exit(0)
 
@@ -290,7 +301,7 @@ func printWelcome() {
 	// fmt.Println("You select " + mainMenuOption)
 }
 
-func mainProgram() {
+func mainProgram() string {
 	valid := false
 	mainMenuOption := "1"
 
@@ -310,6 +321,7 @@ func mainProgram() {
 	}
 	fmt.Println("You select " + mainMenuOption)
 	mainMenuOption = "0"
+	return mainMenuOption
 }
 
 func readFromKeyBoard(text string) string {
@@ -355,9 +367,8 @@ func printAccounts() {
 
 func printMainMenu() {
 	fmt.Printf("%s\n", red("\tMAIN MENU"))
-	fmt.Printf("\t%s: %s\n", cyan("1"), yellow("Manage accounts"))
-	fmt.Printf("\t%s: %s\n", cyan("2"), yellow("Login"))
-	fmt.Printf("\t%s: %s\n", cyan("3"), yellow("Init Sniper"))
+	fmt.Printf("\t%s: %s\n", cyan("1"), yellow("Init Sniper"))
+	fmt.Printf("\t%s: %s\n", cyan("3"), yellow("Manage accounts"))
 	fmt.Printf("\t%s: %s\n", cyan("4"), yellow("Show Payment QR"))
 }
 
@@ -429,7 +440,7 @@ func showPaymentQr() {
 	mainProgram()
 }
 
-func dirExist(dirname string) bool {
+func createWalletFolder(dirname string) bool {
 	_, error := os.Stat(dirname)
 	if os.IsNotExist(error) {
 		if err := os.Mkdir(dirname, os.ModePerm); err != nil {
