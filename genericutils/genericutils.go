@@ -5,7 +5,26 @@ import (
 	"log"
 	"os/exec"
 	"runtime"
+
+	"github.com/go-cmd/cmd"
 )
+
+func ReadFromKeyBoard(text string) string {
+	var data string
+
+	fmt.Print(text + ": ")
+	fmt.Scanf("%s", &data)
+
+	return data
+}
+
+func RunCMD(name string, args ...string) (err error, stdout, stderr []string) {
+	c := cmd.NewCmd(name, args...)
+	s := <-c.Start()
+	stdout = s.Stdout
+	stderr = s.Stderr
+	return
+}
 
 func OpenBrowser(url string) {
 	var err error
