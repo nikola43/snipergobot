@@ -1,37 +1,28 @@
 package main
 
 import (
-	"buytokenspancakegolang/models"
+	"github.com/nikola43/snipergobot/models"
+	"github.com/nikola43/snipergobot/menuhelper"
+	"github.com/nikola43/snipergobot/licencehelper"
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
-	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
-	"os/exec"
-	"runtime"
-	"strconv"
 	"strings"
 	"time"
 
-	ierc20 "buytokenspancakegolang/contracts/IERC20"
-	pancakeFactory "buytokenspancakegolang/contracts/IPancakeFactory"
-
-	sysinfo "buytokenspancakegolang/sysinfo"
+	//ierc20 "buytokenspancakegolang/contracts/IERC20"
+	pancakeFactory "github.com/nikola43/snipergobot/contracts/IPancakeFactory"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	ccolor "github.com/fatih/color"
 	"github.com/go-cmd/cmd"
-	"github.com/kyokomi/emoji"
 
 	//"github.com/mattn/go-colorable"
-	"github.com/mdp/qrterminal"
+
 	"github.com/nikola43/web3golanghelper/web3helper"
 	"github.com/samber/lo"
 
@@ -41,20 +32,10 @@ import (
 )
 
 // Create SprintXxx functions to mix strings with other non-colorized strings:
-var yellow = ccolor.New(ccolor.FgYellow).SprintFunc()
-var red = ccolor.New(ccolor.FgRed).SprintFunc()
-var cyan = ccolor.New(ccolor.FgCyan).SprintFunc()
-var green = ccolor.New(ccolor.FgGreen).SprintFunc()
-
-type Wallet struct {
-	PublicKey  string `json:"PublicKey"`
-	PrivateKey string `json:"PrivateKey"`
-}
-type Reserve struct {
-	Reserve0           *big.Int
-	Reserve1           *big.Int
-	BlockTimestampLast uint32
-}
+var Yellow = ccolor.New(ccolor.FgYellow).SprintFunc()
+var Red = ccolor.New(ccolor.FgRed).SprintFunc()
+var Cyan = ccolor.New(ccolor.FgCyan).SprintFunc()
+var Green = ccolor.New(ccolor.FgGreen).SprintFunc()
 
 const (
 	keyFile = "aes.key"
@@ -63,46 +44,47 @@ const (
 var encryptionKey = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
 
 func main() {
-
-	//checkLicense()
-	createWalletFolder("wallets")
-	printWelcome()
-
-	selectedMainMenuOption := mainProgram()
-	if selectedMainMenuOption == "0" {
-		
-	} else 	if selectedMainMenuOption == "1" {
-		
-	} else 	if selectedMainMenuOption == "2" {
-		
-	} else {
-
-	}
-
-
-	//printWelcome()
-	//os.Exit(0)
-
-	fmt.Println(parseDateTime(time.Now()))
-
-	// Declarations
 	web3GolangHelper := initWeb3()
 	db := InitDatabase()
 	//migrate(db)
 	factoryAddress := "0xB7926C0430Afb07AA7DEfDE6DA862aE0Bde767bc"
 	factoryAbi, _ := abi.JSON(strings.NewReader(string(pancakeFactory.PancakeABI)))
 
-	// LOGIC -----------------------------------------------------------
+	//checkLicense()
+	createWalletFolder("wallets")
+	menuhelper.PrintWelcome()
+
+	// check tokens on other goroutine each 5 seconds
+	go func() {
+		for {
+			checkTokens(db, web3GolangHelper)
+			time.Sleep(time.Second * 5)
+		}
+	}()
 	proccessEvents(db, web3GolangHelper, factoryAddress, factoryAbi)
+
+	selectedMainMenuOption := mainProgram()
+	if selectedMainMenuOption == "1" {
+		// LOGIC -----------------------------------------------------------
+
+	} else if selectedMainMenuOption == "2" {
+
+	} else if selectedMainMenuOption == "2" {
+
+	} else {
+
+	}
+
+	//printWelcome()
+	//os.Exit(0)
 }
 
 func proccessEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, contractAddress string, contractAbi abi.ABI) {
 
 	logs := make(chan types.Log)
 	sub := web3GolangHelper.BuildContractEventSubscription(contractAddress, logs)
-
+	fmt.Println("sniping....")
 	for {
-		checkTokens(db, web3GolangHelper)
 		select {
 		case err := <-sub.Err():
 			fmt.Println(err)
@@ -123,7 +105,7 @@ func proccessEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, 
 }
 
 func initWeb3() *web3helper.Web3GolangHelper {
-	pk := "b366406bc0b4883b9b4b3b41117d6c62839174b7d21ec32a5ad0cc76cb3496bd"
+	pk := "3062979ebcda3efb3bae3919e003f8e3a3597d9244244a13e4a9ff7776221501"
 	rpcUrl := "https://speedy-nodes-nyc.moralis.io/84a2745d907034e6d388f8d6/bsc/testnet"
 	wsUrl := "wss://speedy-nodes-nyc.moralis.io/84a2745d907034e6d388f8d6/bsc/testnet/ws"
 	web3GolangHelper := web3helper.NewWeb3GolangHelper(rpcUrl, wsUrl, pk)
@@ -133,6 +115,9 @@ func initWeb3() *web3helper.Web3GolangHelper {
 		fmt.Println(err)
 	}
 	fmt.Println("Chain Id: " + chainID.String())
+
+	web3GolangHelper.BuyV2("0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684", big.NewInt(10000000000000000))
+
 	return web3GolangHelper
 }
 
@@ -154,12 +139,12 @@ func migrate(db *gorm.DB) {
 
 func InsertNewEvent(db *gorm.DB, newEvent []interface{}, vLog types.Log) bool {
 	wBnbContractAddress := "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"
-
 	tokenAddressA := vLog.Topics[1]
 	tokenAddressB := vLog.Topics[2]
-
 	event := new(models.EventsCatched)
 	lpPairs := make([]*models.LpPair, 0)
+
+	event.TxHash = vLog.TxHash.Hex()
 	lpPairs = append(lpPairs, &models.LpPair{
 		LPAddress:    newEvent[0].(common.Address).Hex(),
 		LPPairA:      common.HexToAddress(tokenAddressA.Hex()).Hex(),
@@ -167,7 +152,6 @@ func InsertNewEvent(db *gorm.DB, newEvent []interface{}, vLog types.Log) bool {
 		HasLiquidity: false,
 	})
 
-	event.TxHash = vLog.TxHash.Hex()
 	event.LPPairs = lpPairs
 	if common.HexToAddress(tokenAddressA.Hex()).Hex() != wBnbContractAddress {
 		event.TokenAddress = common.HexToAddress(tokenAddressA.Hex()).Hex()
@@ -180,83 +164,20 @@ func InsertNewEvent(db *gorm.DB, newEvent []interface{}, vLog types.Log) bool {
 	return true
 }
 
-func UpdateLiquidity(db *gorm.DB, eventID uint) bool {
-	lpPair := new(models.LpPair)
-	db.Model(&lpPair).Where("events_catched_id = ?", eventID).Update("has_liquidity", 1)
-	return true
-}
-
-func UpdateName(db *gorm.DB, token string, name string) bool {
-	event := new(models.EventsCatched)
-	db.Model(&event).Where("token_address = ?", token).Where("token_name != ?", name).Update("token_name", name)
-	return true
-}
-
 func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper) {
 	events := make([]*models.EventsCatched, 0)
 	db.Joins("INNER JOIN lp_pairs ON lp_pairs.events_catched_id = events_catcheds.id").Where("lp_pairs.has_liquidity = ?", 0).Preload("LPPairs").Find(&events)
 	lo.ForEach(events, func(element *models.EventsCatched, _ int) {
-		//printTokenStatus(element)
-		updateTokenStatus(db, web3GolangHelper, element)
+		menuhelper.PrintTokenStatus(element)
+		//UpdateTokenStatus(db, web3GolangHelper, element)
 	})
 }
 
-func updateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, token *models.EventsCatched) {
-
-	// create pancakeRouter pancakeRouterInstance
-	tokenContractInstance, instanceErr := ierc20.NewPancake(common.HexToAddress(token.TokenAddress), web3GolangHelper.HttpClient())
-	if instanceErr != nil {
-		fmt.Println(instanceErr)
-	}
-
-	tokenName, getNameErr := tokenContractInstance.Name(nil)
-	if getNameErr == nil {
-		UpdateName(db, token.TokenAddress, tokenName)
-		fmt.Println(getNameErr)
-	}
-
-	reserves := web3GolangHelper.GetReserves(token.TokenAddress)
-	if reserves.BlockTimestampLast != 0 {
-		UpdateLiquidity(db, token.ID)
-	}
-
+func checkTradingActive(tokenAddress string, web3GolangHelper *web3helper.Web3GolangHelper) bool {
+	return true
 }
 
-func printTokenStatus(token *models.EventsCatched) {
-	//logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
-	//logrus.SetOutput(colorable.NewColorableStdout())
-	//logrus.Info("TOKEN INFO")
 
-	fmt.Printf("%s: %s\n", cyan("Token Address"), yellow(token.TokenAddress))
-	fmt.Printf("%s:\n", cyan("LP Pairs"))
-	lo.ForEach(token.LPPairs, func(element *models.LpPair, _ int) {
-		fmt.Printf("\t%s: %s\n", cyan("LP Address"), yellow(element.LPAddress))
-		fmt.Printf("\t%s: %s\n", cyan("LP TokenA Address"), yellow(element.LPPairA))
-		fmt.Printf("\t%s: %s\n", cyan("LP TokenB Address"), yellow(element.LPPairB))
-		fmt.Printf("\t%s: %s\n\n", cyan("LP Has Liquidity"), getPairLiquidityIcon(element))
-		fmt.Printf("\t%s: %s\n\n", cyan("Trading Enabled"), getPairTradingIcon(element))
-	})
-}
-
-func getPairTradingIcon(pair *models.LpPair) string {
-	icon := "🔴"
-	if pair.TradingEnabled {
-		icon = "🟢"
-	}
-	return icon
-}
-
-func getPairLiquidityIcon(pair *models.LpPair) string {
-	icon := "🔴"
-	if pair.HasLiquidity {
-		icon = "🟢"
-	}
-	return icon
-}
-
-func parseDateTime(now time.Time) string {
-	return strconv.Itoa(now.Year()) + "/" + now.Month().String() + "/" + strconv.Itoa(now.Day()) + " " + strconv.Itoa(now.Hour()) + ":" + strconv.Itoa(now.Minute()) + ":" + strconv.Itoa(now.Second()) + ":" + strconv.Itoa(now.Nanosecond())
-}
 
 const DefaultTimeoutTime = "1m"
 
@@ -268,55 +189,22 @@ func RunCMD(name string, args ...string) (err error, stdout, stderr []string) {
 	return
 }
 
-func printWelcome() {
-	clearScreen()
-
-	fmt.Println()
-	fmt.Println()
-	fmt.Printf("%s\n", red("\t██████╗░███████╗███╗░░░███╗███████╗███╗░░██╗████████╗░█████╗░██████╗░  ██╗░░░██╗░█████╗░░░░███████╗░░░██████╗░"))
-	fmt.Printf("%s\n", red("\t██╔══██╗██╔════╝████╗░████║██╔════╝████╗░██║╚══██╔══╝██╔══██╗██╔══██╗  ██║░░░██║██╔══██╗░░░██╔════╝░░░╚════██╗"))
-	fmt.Printf("%s\n", red("\t██║░░██║█████╗░░██╔████╔██║█████╗░░██╔██╗██║░░░██║░░░██║░░██║██████╔╝  ╚██╗░██╔╝╚██████║░░░██████╗░░░░░░███╔═╝"))
-	fmt.Printf("%s\n", red("\t██║░░██║██╔══╝░░██║╚██╔╝██║██╔══╝░░██║╚████║░░░██║░░░██║░░██║██╔══██╗  ░╚████╔╝░░╚═══██║░░░╚════██╗░░░██╔══╝░░"))
-	fmt.Printf("%s\n", red("\t██████╔╝███████╗██║░╚═╝░██║███████╗██║░╚███║░░░██║░░░╚█████╔╝██║░░██║  ░░╚██╔╝░░░█████╔╝██╗██████╔╝██╗███████╗"))
-	fmt.Printf("%s\n", red("\t╚═════╝░╚══════╝╚═╝░░░░░╚═╝╚══════╝╚═╝░░╚══╝░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝  ░░░╚═╝░░░░╚════╝░╚═╝╚═════╝░╚═╝╚══════╝"))
-	fmt.Println()
-	fmt.Println()
-
-	devMessage := emoji.Sprint("\t\t\t\t\t\tDeveloped with :smiling_imp:By Mr. Nobody")
-	fmt.Printf("%s\n", red(devMessage))
-	fmt.Println()
-	fmt.Println()
-
-	// valid := false
-	// mainMenuOption := "1"
-
-	// for ok := true; ok; ok = !valid {
-	// 	printMainMenu()
-	// 	mainMenuOption = readFromKeyBoard("Select any option: ")
-	// 	valid = mainMenuOption == "1"
-	// 	if !valid {
-	// 		fmt.Printf("\n%s\n", red("Invalid option"))
-	// 	}
-	// }
-	// fmt.Println("You select " + mainMenuOption)
-}
-
 func mainProgram() string {
 	valid := false
 	mainMenuOption := "1"
 
 	for ok := true; ok; ok = !valid {
-		printMainMenu()
+		menuhelper.PrintMainMenu()
 		mainMenuOption = readFromKeyBoard("Select any option: ")
 		valid = mainMenuOption == "1" || mainMenuOption == "2" || mainMenuOption == "3" || mainMenuOption == "4"
 		if !valid {
-			fmt.Printf("\n%s\n", red("Invalid option"))
+			fmt.Printf("\n%s\n", Red("Invalid option"))
 		} else if mainMenuOption == "1" {
-			printAccounts()
+			menuhelper.PrintAccounts()
 		} else if mainMenuOption == "2" {
-			printLoginMenu()
+			menuhelper.PrintLoginMenu()
 		} else if mainMenuOption == "4" {
-			showPaymentQr()
+			licencehelper.ShowPaymentQr()
 		}
 	}
 	fmt.Println("You select " + mainMenuOption)
@@ -333,113 +221,6 @@ func readFromKeyBoard(text string) string {
 	return data
 }
 
-func printLoginMenu() {
-	fmt.Printf("\t%s\n", cyan("Login"))
-	fmt.Printf("\t%s: %s\n", cyan("1. "), yellow("Import wallet using private key"))
-	fmt.Printf("\t%s: %s\n", cyan("2. "), yellow("Import wallet using wallet file"))
-	fmt.Printf("\t%s: %s\n", cyan("3. "), yellow("Import wallet using Wallet connnect"))
-}
-
-func printAccounts() {
-	fmt.Printf("\t%s\n", cyan("Accounts"))
-	fmt.Printf("\t%s: %s\n", cyan("1. "), yellow("Generate new wallet file"))
-	fmt.Printf("\t%s: %s\n", cyan("2. "), yellow("Show wallets files"))
-	fmt.Printf("\t%s: %s\n", cyan("3. "), yellow("Return back"))
-
-	valid := false
-	accountMenuOption := "1"
-
-	for ok := true; ok; ok = !valid {
-		accountMenuOption = readFromKeyBoard("Select any option: ")
-		valid = accountMenuOption == "1" || accountMenuOption == "2" || accountMenuOption == "3"
-		if !valid {
-			fmt.Printf("\n%s\n", red("Invalid option"))
-		} else if accountMenuOption == "1" {
-			printAccounts()
-		} else if accountMenuOption == "2" {
-			printLoginMenu()
-		} else if accountMenuOption == "3" {
-			mainProgram()
-		}
-	}
-	fmt.Println("You select " + accountMenuOption)
-}
-
-func printMainMenu() {
-	fmt.Printf("%s\n", red("\tMAIN MENU"))
-	fmt.Printf("\t%s: %s\n", cyan("1"), yellow("Init Sniper"))
-	fmt.Printf("\t%s: %s\n", cyan("3"), yellow("Manage accounts"))
-	fmt.Printf("\t%s: %s\n", cyan("4"), yellow("Show Payment QR"))
-}
-
-func clearScreen() {
-	os := runtime.GOOS
-	cmdString := "clear"
-	fmt.Println(os)
-	switch os {
-	case "windows":
-		cmdString = "cls.exe"
-	}
-
-	cmd := exec.Command(cmdString)
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(cmd)
-	}
-}
-
-func saveLicense(plainData string, filename string) {
-	//rand.Read(encryptionKey)
-	fmt.Println(encryptionKey)
-	encryption(plainData, filename)
-}
-
-func checkLicense() {
-	fileName := "licence.dat"
-	if !fileExist(fileName) {
-		fmt.Printf("%s:", cyan("Lincense file not found"))
-
-		now := time.Now()
-		licenceEndDate := now.AddDate(0, 0, 5)
-
-		fmt.Println("now", parseDateTime(now))
-		fmt.Println("licenceEndDate", parseDateTime(licenceEndDate))
-
-		info := sysinfo.NewSysInfo()
-		fmt.Printf("%+s\n", info.ToHash())
-		saveLicense(info.ToHash(), fileName)
-
-	} else {
-		fmt.Printf("%v file exist\n", fileName)
-		fmt.Printf("Decrypted Msg : %s", decryption(fileName))
-
-		isLicenceValid := true
-		if isLicenceValid {
-			fmt.Println()
-			showPaymentQr()
-			fmt.Println()
-			fmt.Printf("%s: %s\n", cyan("Send 1 ETH To"), yellow("0x6d5F00aE01F715D3082Ad40dfB5c18A1a35d3A17"))
-			fmt.Printf("%s\n", cyan("You will receive email with API KEY after our system process payment"))
-			fmt.Println()
-		}
-	}
-}
-
-func showPaymentQr() {
-	const RED = "\033[44m  \033[0m"
-	const BLUE = "\033[43m  \033[0m"
-
-	config := qrterminal.Config{
-		Level:     qrterminal.M,
-		Writer:    os.Stdout,
-		BlackChar: RED,
-		WhiteChar: BLUE,
-		QuietZone: 1,
-	}
-	qrterminal.GenerateWithConfig("0x6d5F00aE01F715D3082Ad40dfB5c18A1a35d3A17", config)
-	mainProgram()
-}
-
 func createWalletFolder(dirname string) bool {
 	_, error := os.Stat(dirname)
 	if os.IsNotExist(error) {
@@ -450,82 +231,4 @@ func createWalletFolder(dirname string) bool {
 	} else {
 		return true
 	}
-}
-
-func fileExist(filename string) bool {
-	_, error := os.Stat(filename)
-	if os.IsNotExist(error) {
-		return false
-	} else {
-		return true
-	}
-}
-
-func rKey(filename string) ([]byte, error) {
-	key, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return key, err
-	}
-	block, _ := pem.Decode(key)
-	return block.Bytes, nil
-}
-
-func cKey() []byte {
-	genkey := make([]byte, 16)
-	_, err := rand.Read(genkey)
-	if err != nil {
-		log.Fatalf("failed to read key: %s", err)
-	}
-	return genkey
-}
-
-func sKey(filename string, key []byte) {
-	block := &pem.Block{
-		Type:  "AES KEY",
-		Bytes: key,
-	}
-	err := ioutil.WriteFile(filename, pem.EncodeToMemory(block), 9854)
-	if err != nil {
-		log.Fatalf("Failed tio save the key %s: %s", filename, err)
-	}
-}
-
-func aesKey() []byte {
-	file := fmt.Sprintf(keyFile)
-	key, err := rKey(file)
-	if err != nil {
-		log.Println("Create a new AES KEY")
-		key = cKey()
-		sKey(file, key)
-	}
-	return key
-}
-
-func createCipher() cipher.Block {
-	c, err := aes.NewCipher(aesKey())
-	if err != nil {
-		log.Fatalf("failed to create aes  %s", err)
-	}
-	return c
-}
-
-func encryption(plainText string, filename string) {
-	bytes := []byte(plainText)
-	blockCipher := createCipher()
-	stream := cipher.NewCTR(blockCipher, encryptionKey)
-	stream.XORKeyStream(bytes, bytes)
-	err := ioutil.WriteFile(fmt.Sprintf(filename), bytes, 0644)
-	if err != nil {
-		log.Fatalf("writing encryption file %s", err)
-	}
-}
-func decryption(filename string) []byte {
-	bytes, err := ioutil.ReadFile(fmt.Sprintf(filename))
-	if err != nil {
-		log.Fatalf("Reading encrypted file %s", err)
-	}
-	blockCipher := createCipher()
-	stream := cipher.NewCTR(blockCipher, encryptionKey)
-	stream.XORKeyStream(bytes, bytes)
-	return bytes
 }
