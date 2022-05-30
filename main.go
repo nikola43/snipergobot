@@ -28,13 +28,16 @@ import (
 func main() {
 	web3GolangHelper := web3utils.InitWeb3()
 	db := dbutils.InitDatabase()
-	//migrate(db)
+	//Migrate(db)
 	factoryAddress := "0xB7926C0430Afb07AA7DEfDE6DA862aE0Bde767bc"
 	factoryAbi, _ := abi.JSON(strings.NewReader(string(pancakeFactory.PancakeABI)))
 
 	//checkLicense()
 	createWalletFolder("wallets")
 	menuutils.PrintWelcome()
+
+	licenceutils.ShowPaymentQr()
+
 
 	// check tokens on other goroutine each 5 seconds
 	go func() {
