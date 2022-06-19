@@ -63,11 +63,39 @@ func ProccessContractEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3Golang
 			fmt.Println(tokenAddressA)
 			fmt.Println(tokenAddressB)
 
-			if tokenAddressA.Hex() == "" || tokenAddressB.Hex() == "" {
+			if tokenAddressA.Hex() != "" && tokenAddressB.Hex() != "" {
 				dbutils.InsertNewEvent(db, res, vLog)
 			}
 		}
 	}
+
+	/*
+		for {
+			select {
+			case err := <-sub.Err():
+				fmt.Println(err)
+				//out <- err.Error()
+
+			case vLog := <-logs:
+				fmt.Println("paco")
+				fmt.Println("vLog.TxHash: " + vLog.TxHash.Hex())
+				fmt.Println(vLog)
+				if len(vLog.Data) > 0 {
+					switch vLog.Topics[0].Hex() {
+					case giftCardPayedSigHash.Hex():
+						res, err := nodeAbi.Unpack("GiftCardPayed", vLog.Data)
+						if err != nil {
+							log.Fatal(err)
+						}
+						fmt.Println(res)
+						services.SetGiftCardIntentPayment(res[2].(string))
+					}
+				}
+
+			}
+		}
+	*/
+
 }
 
 func GetTokenInfo(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, tokenAddress string, lpAddress string) bool {
