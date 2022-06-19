@@ -37,7 +37,7 @@ func InitWeb3(pk string) *web3helper.Web3GolangHelper {
 	return web3GolangHelper
 }
 
-func ProccessContractEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, contractAddress string, contractAbi abi.ABI, tokenAddress string, lpAddress string) {
+func ProccessContractEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, contractAddress string, contractAbi abi.ABI) {
 
 	logs := make(chan types.Log)
 	sub := web3GolangHelper.BuildContractEventSubscription(contractAddress, logs)
