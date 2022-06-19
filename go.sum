@@ -305,8 +305,6 @@ github.com/mschoch/smat v0.0.0-20160514031455-90eadee771ae/go.mod h1:qAyveg+e4CE
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/naoina/go-stringutil v0.1.0/go.mod h1:XJ2SJL9jCtBh+P9q5btrd/Ylo8XwT/h1USek5+NqSA0=
 github.com/naoina/toml v0.1.2-0.20170918210437-9fafd6967416/go.mod h1:NBIhNtsFMo3G2szEBne+bO4gS192HuIYRqfvOWb4i1E=
-github.com/nikola43/web3golanghelper v0.0.0-20220512223834-8c588affc2ae h1:obKos7ez5QuHsdTYqPKZnixN3GeY3YfeRlkyccntgCs=
-github.com/nikola43/web3golanghelper v0.0.0-20220512223834-8c588affc2ae/go.mod h1:5munnE8vcXi0/uU1soOq5NYe7RiG0JgNQw1v8xgvjO8=
 github.com/nikola43/web3golanghelper v0.0.0-20220619063316-30221f6c9316 h1:466nJB6moapw+Rs5L1tzIyz1ujwIThzppizHQlSWpCM=
 github.com/nikola43/web3golanghelper v0.0.0-20220619063316-30221f6c9316/go.mod h1:5munnE8vcXi0/uU1soOq5NYe7RiG0JgNQw1v8xgvjO8=
 github.com/nsf/termbox-go v0.0.0-20190121233118-02980233997d h1:x3S6kxmy49zXVVyhcnrFqxvNVCBPb2KZ9hV2RBdS840=

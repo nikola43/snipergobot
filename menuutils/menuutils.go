@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os/exec"
 	"runtime"
-	"time"
 
 	"github.com/nikola43/snipergobot/models"
 
@@ -29,7 +28,7 @@ func PrintTokenPriceInfo(token *models.EventsCatched) {
 
 func PrintTokenStatus(token *models.EventsCatched) {
 
-	fmt.Printf("%s\n", time.Now())
+	//fmt.Printf("%s\n", time.Now())
 	fmt.Printf("%s: %s\n", Cyan("Token Address"), Yellow(token.TokenAddress))
 	fmt.Printf("%s: %s\n", Cyan("Token Name"), Yellow(token.TokenName))
 	fmt.Printf("%s:\n", Cyan("LP Pairs"))

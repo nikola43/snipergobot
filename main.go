@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/guptarohit/asciigraph"
 	"github.com/nikola43/snipergobot/dbutils"
 	"github.com/nikola43/snipergobot/genericutils"
 	"github.com/nikola43/snipergobot/licenceutils"
@@ -48,17 +47,18 @@ func main() {
 	hasLiquidity := web3utils.GetTokenInfo(db, web3GolangHelper, tokenAddress, lpAddress)
 	fmt.Println(hasLiquidity)
 
-	data := []float64{3, 4, 9, 6, 2, 4, 5, 8, 5, 10, 2, 7, 2, 5, 6}
-	graph := asciigraph.Plot(data)
+	/*
+		data := []float64{3, 4, 9, 6, 2, 4, 5, 8, 5, 10, 2, 7, 2, 5, 6}
+		graph := asciigraph.Plot(data)
 
-	fmt.Println(graph)
+		fmt.Println(graph)
+	*/
 
 	//web3GolangHelper.Buy(tokenAddress, 0.1)
 
 	// check tokens on other goroutine each 5 seconds
 	go func() {
 		for {
-			fmt.Println("now", ParseDateTime(time.Now()))
 			checkTokens(db, web3GolangHelper, tokenAddress, lpAddress)
 		}
 	}()
@@ -113,6 +113,8 @@ func readUserContractAddressInput() string {
 }
 
 func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, tokenAddress string, lpAddress string) {
+
+	//fmt.Println("now", ParseDateTime(time.Now()))
 	events := make([]*models.EventsCatched, 0)
 	db.Joins("INNER JOIN lp_pairs ON lp_pairs.events_catched_id = events_catcheds.id").Where("lp_pairs.has_liquidity = ?", 0).Preload("LPPairs").Find(&events)
 	lo.ForEach(events, func(element *models.EventsCatched, _ int) {

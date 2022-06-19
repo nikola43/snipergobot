@@ -8,7 +8,6 @@ require (
 	github.com/go-cmd/cmd v1.4.1
 	github.com/kyokomi/emoji v2.2.4+incompatible
 	github.com/mdp/qrterminal v1.0.1
-	github.com/nikola43/web3golanghelper v0.0.0-20220619063316-30221f6c9316
 	github.com/samber/lo v1.21.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	gorm.io/driver/sqlite v1.3.2
@@ -34,6 +33,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mattn/go-sqlite3 v1.14.13 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
+	github.com/nikola43/web3golanghelper v0.0.0-20220619063316-30221f6c9316 // indirect
 	github.com/nsf/termbox-go v0.0.0-20190121233118-02980233997d // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
