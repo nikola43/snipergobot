@@ -28,6 +28,7 @@ func InitWeb3(pk string) *web3helper.Web3GolangHelper {
 		fmt.Println(err)
 	}
 	fmt.Printf("%s\n", menuutils.Green("Web3 Conected"))
+	fmt.Printf("%s: %s\n", menuutils.Cyan("Account"), menuutils.Yellow(web3GolangHelper.FromAddress))
 	fmt.Printf("%s: %s\n", menuutils.Cyan("Detected Chain Id: "), menuutils.Yellow(chainID))
 
 	//web3GolangHelper.BuyV2("0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684", big.NewInt(10000000000000000))
@@ -68,7 +69,7 @@ func ProccessContractEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3Golang
 	}
 }
 
-func GetTokenInfo(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, tokenAddress string, lpAddress string) {
+func GetTokenInfo(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, tokenAddress string, lpAddress string) bool {
 	// create pancakeRouter pancakeRouterInstance
 	tokenContractInstance, instanceErr := ierc20.NewPancake(common.HexToAddress(tokenAddress), web3GolangHelper.HttpClient())
 	if instanceErr != nil {
@@ -114,6 +115,8 @@ func GetTokenInfo(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, to
 	fmt.Printf("\t%s: %s\n", menuutils.Cyan("Trading Active"), menuutils.GetPairLiquidityIcon(false))
 
 	//UpdateTradingActive(db, token.ID)
+
+	return (reserves.Reserve0.Uint64() > 0 && reserves.Reserve1.Uint64() > 0)
 }
 
 func checkTradingActive(tokenAddress string, web3GolangHelper *web3helper.Web3GolangHelper) bool {
