@@ -35,7 +35,7 @@ func InitWeb3(pk string) *web3helper.Web3GolangHelper {
 	return web3GolangHelper
 }
 
-func ProccessContractEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, contractAddress string, contractAbi abi.ABI) {
+func ProccessContractEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, contractAddress string, contractAbi abi.ABI, tokenAddress string, lpAddress string) {
 
 	logs := make(chan types.Log)
 	sub := web3GolangHelper.BuildContractEventSubscription(contractAddress, logs)
@@ -68,7 +68,7 @@ func ProccessContractEvents(db *gorm.DB, web3GolangHelper *web3helper.Web3Golang
 	}
 }
 
-func GetTokenInfo(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, tokenAddress string) {
+func GetTokenInfo(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, tokenAddress string, lpAddress string) {
 	// create pancakeRouter pancakeRouterInstance
 	tokenContractInstance, instanceErr := ierc20.NewPancake(common.HexToAddress(tokenAddress), web3GolangHelper.HttpClient())
 	if instanceErr != nil {
@@ -95,7 +95,9 @@ func GetTokenInfo(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, to
 		}
 	*/
 
-	reserves := web3GolangHelper.GetReserves("0x")
+	reserves := web3GolangHelper.GetReserves(lpAddress)
+	fmt.Println("reserves")
+	fmt.Println(reserves)
 	if reserves.BlockTimestampLast != 0 {
 		//dbutils.UpdateLiquidity(db, token.ID)
 	}
@@ -108,7 +110,7 @@ func GetTokenInfo(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, to
 	fmt.Printf("\t%s: %s\n", menuutils.Cyan("LP Address"), menuutils.Yellow("0x536f0A9fdC03eDcAF78720f6E3855F7bb6fEcA36"))
 	fmt.Printf("\t%s: %s\n", menuutils.Cyan("LP TokenA Address"), menuutils.Yellow("0x536f0A9fdC03eDcAF78720f6E3855F7bb6fEcA36"))
 	fmt.Printf("\t%s: %s\n", menuutils.Cyan("LP TokenB Address"), menuutils.Yellow("0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"))
-	fmt.Printf("\t%s: %s\n", menuutils.Cyan("LP Has Liquidity"), menuutils.GetPairLiquidityIcon(false))
+	fmt.Printf("\t%s: %s\n", menuutils.Cyan("LP Has Liquidity"), menuutils.GetPairLiquidityIcon(reserves.Reserve0.Uint64() > 0 && reserves.Reserve1.Uint64() > 0))
 	fmt.Printf("\t%s: %s\n", menuutils.Cyan("Trading Active"), menuutils.GetPairLiquidityIcon(false))
 
 	//UpdateTradingActive(db, token.ID)
