@@ -1,10 +1,12 @@
 package menuutils
 
 import (
-	"github.com/nikola43/snipergobot/models"
 	"fmt"
 	"os/exec"
 	"runtime"
+	"time"
+
+	"github.com/nikola43/snipergobot/models"
 
 	ccolor "github.com/fatih/color"
 	"github.com/kyokomi/emoji"
@@ -22,6 +24,7 @@ func PrintTokenStatus(token *models.EventsCatched) {
 	//logrus.SetOutput(colorable.NewColorableStdout())
 	//logrus.Info("TOKEN INFO")
 
+	fmt.Printf("%s\n", time.Now())
 	fmt.Printf("%s: %s\n", Cyan("Token Address"), Yellow(token.TokenAddress))
 	fmt.Printf("%s: %s\n", Cyan("Token Name"), Yellow(token.TokenName))
 	fmt.Printf("%s:\n", Cyan("LP Pairs"))
@@ -29,23 +32,23 @@ func PrintTokenStatus(token *models.EventsCatched) {
 		fmt.Printf("\t%s: %s\n", Cyan("LP Address"), Yellow(element.LPAddress))
 		fmt.Printf("\t%s: %s\n", Cyan("LP TokenA Address"), Yellow(element.LPPairA))
 		fmt.Printf("\t%s: %s\n", Cyan("LP TokenB Address"), Yellow(element.LPPairB))
-		fmt.Printf("\t%s: %s\n", Cyan("LP Has Liquidity"), GetPairLiquidityIcon(element))
-		fmt.Printf("\t%s:  %s\n\n", Cyan("Trading Enabled"), GetPairTradingIcon(element))
+		fmt.Printf("\t%s: %s\n", Cyan("LP Has Liquidity"), GetPairLiquidityIcon(true))
+		fmt.Printf("\t%s:  %s\n\n", Cyan("Trading Enabled"), GetPairTradingIcon(false))
 	})
 	fmt.Println("------------------------------------------------------------------------")
 }
 
-func GetPairTradingIcon(pair *models.LpPair) string {
+func GetPairTradingIcon(tradingEnabled bool) string {
 	icon := "🔴"
-	if pair.TradingEnabled {
+	if tradingEnabled {
 		icon = "🟢"
 	}
 	return icon
 }
 
-func GetPairLiquidityIcon(pair *models.LpPair) string {
+func GetPairLiquidityIcon(hasLiquidity bool) string {
 	icon := "🔴"
-	if pair.HasLiquidity {
+	if hasLiquidity {
 		icon = "🟢"
 	}
 	return icon

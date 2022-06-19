@@ -1,10 +1,15 @@
 package dbutils
 
 import (
+	"fmt"
+
 	"github.com/nikola43/snipergobot/models"
+	"github.com/nikola43/web3golanghelper/web3helper"
+	"github.com/samber/lo"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	ierc20 "github.com/nikola43/snipergobot/contracts/IERC20"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -70,7 +75,6 @@ func UpdateName(db *gorm.DB, token string, name string) bool {
 	return true
 }
 
-/*
 func UpdateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, token *models.EventsCatched) {
 
 	// create pancakeRouter pancakeRouterInstance
@@ -96,8 +100,5 @@ func UpdateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelpe
 		}
 	})
 
-	tradingActive := checkTradingActive(token.TokenAddress, web3GolangHelper)
-	fmt.Println(tradingActive)
 	//UpdateTradingActive(db, token.ID)
 }
-*/

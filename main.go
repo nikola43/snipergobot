@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -26,18 +27,19 @@ import (
 // Create SprintXxx functions to mix strings with other non-colorized strings:
 
 func main() {
-	web3GolangHelper := web3utils.InitWeb3()
+	pk := "3062979ebcda3efb3bae3919e003f8e3a3597d9244244a13e4a9ff7776221501"
+	web3GolangHelper := web3utils.InitWeb3(pk)
 	db := dbutils.InitDatabase()
-	//Migrate(db)
+	//dbutils.Migrate(db)
 	factoryAddress := "0xB7926C0430Afb07AA7DEfDE6DA862aE0Bde767bc"
 	factoryAbi, _ := abi.JSON(strings.NewReader(string(pancakeFactory.PancakeABI)))
 
 	//checkLicense()
 	createWalletFolder("wallets")
-	menuutils.PrintWelcome()
 
-	licenceutils.ShowPaymentQr()
+	tokenAddress := readUserContractAddressInput()
 
+	web3utils.GetTokenInfo(db, web3GolangHelper, tokenAddress)
 
 	// check tokens on other goroutine each 5 seconds
 	go func() {
@@ -48,20 +50,27 @@ func main() {
 	}()
 	web3utils.ProccessContractEvents(db, web3GolangHelper, factoryAddress, factoryAbi)
 
-	selectedMainMenuOption := mainProgram()
-	if selectedMainMenuOption == "1" {
-		// LOGIC -----------------------------------------------------------
+}
 
-	} else if selectedMainMenuOption == "2" {
+func readUserContractAddressInput() string {
 
-	} else if selectedMainMenuOption == "2" {
+	fmt.Print("Enter token contract Address: ")
+	tokenFilterAddress := ""
 
-	} else {
-
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		tokenFilterAddress = scanner.Text()
+		fmt.Printf("%s: %s\n", menuutils.Cyan("Selected Token"), menuutils.Yellow(tokenFilterAddress))
+		return tokenFilterAddress
 	}
 
-	//printWelcome()
-	//os.Exit(0)
+	if scanner.Err() != nil {
+		// Handle error.
+		fmt.Println("scanner.Err()")
+		fmt.Println(scanner.Err())
+	}
+
+	return tokenFilterAddress
 }
 
 func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper) {
@@ -69,11 +78,14 @@ func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper) {
 	db.Joins("INNER JOIN lp_pairs ON lp_pairs.events_catched_id = events_catcheds.id").Where("lp_pairs.has_liquidity = ?", 0).Preload("LPPairs").Find(&events)
 	lo.ForEach(events, func(element *models.EventsCatched, _ int) {
 		menuutils.PrintTokenStatus(element)
-		//UpdateTokenStatus(db, web3GolangHelper, element)
+		dbutils.UpdateTokenStatus(db, web3GolangHelper, element)
 	})
 }
 
 func checkTradingActive(tokenAddress string, web3GolangHelper *web3helper.Web3GolangHelper) bool {
+
+	web3GolangHelper.Buy(tokenAddress)
+
 	return true
 }
 
