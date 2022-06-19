@@ -100,5 +100,5 @@ func UpdateTokenStatus(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelpe
 		}
 	})
 
-	//UpdateTradingActive(db, token.ID)
+	UpdateTradingActive(db, token.ID)
 }

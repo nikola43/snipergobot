@@ -9,6 +9,7 @@ import (
 	"github.com/nikola43/snipergobot/models"
 
 	ccolor "github.com/fatih/color"
+	"github.com/guptarohit/asciigraph"
 	"github.com/kyokomi/emoji"
 	"github.com/samber/lo"
 )
@@ -19,10 +20,14 @@ var Red = ccolor.New(ccolor.FgRed).SprintFunc()
 var Cyan = ccolor.New(ccolor.FgCyan).SprintFunc()
 var Green = ccolor.New(ccolor.FgGreen).SprintFunc()
 
+func PrintTokenPriceInfo(token *models.EventsCatched) {
+	data := []float64{3, 4, 9, 6, 2, 4, 5, 8, 5, 10, 2, 7, 2, 5, 6}
+	graph := asciigraph.Plot(data)
+
+	fmt.Println(graph)
+}
+
 func PrintTokenStatus(token *models.EventsCatched) {
-	//logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
-	//logrus.SetOutput(colorable.NewColorableStdout())
-	//logrus.Info("TOKEN INFO")
 
 	fmt.Printf("%s\n", time.Now())
 	fmt.Printf("%s: %s\n", Cyan("Token Address"), Yellow(token.TokenAddress))
@@ -32,9 +37,10 @@ func PrintTokenStatus(token *models.EventsCatched) {
 		fmt.Printf("\t%s: %s\n", Cyan("LP Address"), Yellow(element.LPAddress))
 		fmt.Printf("\t%s: %s\n", Cyan("LP TokenA Address"), Yellow(element.LPPairA))
 		fmt.Printf("\t%s: %s\n", Cyan("LP TokenB Address"), Yellow(element.LPPairB))
-		fmt.Printf("\t%s: %s\n", Cyan("LP Has Liquidity"), GetPairLiquidityIcon(true))
-		fmt.Printf("\t%s:  %s\n\n", Cyan("Trading Enabled"), GetPairTradingIcon(false))
+		fmt.Printf("\t%s: %s\n", Cyan("LP Has Liquidity"), GetPairLiquidityIcon(element.HasLiquidity))
+		fmt.Printf("\t%s:  %s\n\n", Cyan("Trading Enabled"), GetPairTradingIcon(element.TradingEnabled))
 	})
+	fmt.Printf("%s: %s\n", Cyan("Token Price"), Yellow(token.TokenAddress))
 	fmt.Println("------------------------------------------------------------------------")
 }
 

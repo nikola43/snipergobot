@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/guptarohit/asciigraph"
 	"github.com/nikola43/snipergobot/dbutils"
 	"github.com/nikola43/snipergobot/genericutils"
 	"github.com/nikola43/snipergobot/licenceutils"
@@ -40,23 +42,32 @@ func main() {
 	//tokenAddress := readUserContractAddressInput()
 	//lpAddress := readLpContractAddressInput()
 
-	tokenAddress := "0x536f0A9fdC03eDcAF78720f6E3855F7bb6fEcA36"
-	lpAddress := "0x692Cf4A84962E94Db915CD7dc890b05C6A196812"
+	tokenAddress := "0x1d61D38096f161410612b20D2c1080e5549dB3dd"
+	lpAddress := "0x140a1b90945fCB4C453846e6B147da7e36f1eeC0"
 
 	hasLiquidity := web3utils.GetTokenInfo(db, web3GolangHelper, tokenAddress, lpAddress)
 	fmt.Println(hasLiquidity)
 
-	web3GolangHelper.Buy(tokenAddress, 0.1)
+	data := []float64{3, 4, 9, 6, 2, 4, 5, 8, 5, 10, 2, 7, 2, 5, 6}
+	graph := asciigraph.Plot(data)
+
+	fmt.Println(graph)
+
+	//web3GolangHelper.Buy(tokenAddress, 0.1)
 
 	// check tokens on other goroutine each 5 seconds
 	go func() {
 		for {
+			fmt.Println("now", ParseDateTime(time.Now()))
 			checkTokens(db, web3GolangHelper, tokenAddress, lpAddress)
-			time.Sleep(time.Second * 5)
 		}
 	}()
 	web3utils.ProccessContractEvents(db, web3GolangHelper, factoryAddress, factoryAbi, tokenAddress, lpAddress)
 
+}
+
+func ParseDateTime(now time.Time) string {
+	return strconv.Itoa(now.Year()) + "/" + now.Month().String() + "/" + strconv.Itoa(now.Day()) + " " + strconv.Itoa(now.Hour()) + ":" + strconv.Itoa(now.Minute()) + ":" + strconv.Itoa(now.Second()) + ":" + strconv.Itoa(now.Nanosecond())
 }
 
 func readLpContractAddressInput() string {
@@ -106,8 +117,9 @@ func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper, tok
 	db.Joins("INNER JOIN lp_pairs ON lp_pairs.events_catched_id = events_catcheds.id").Where("lp_pairs.has_liquidity = ?", 0).Preload("LPPairs").Find(&events)
 	lo.ForEach(events, func(element *models.EventsCatched, _ int) {
 		hasLiquidity := web3utils.GetTokenInfo(db, web3GolangHelper, tokenAddress, lpAddress)
+		//menuutils.PrintTokenPriceInfo(element)
 		menuutils.PrintTokenStatus(element)
-		dbutils.UpdateTokenStatus(db, web3GolangHelper, element)
+		//dbutils.UpdateTokenStatus(db, web3GolangHelper, element)
 		if hasLiquidity {
 			checkTradingActive(tokenAddress, web3GolangHelper)
 		}

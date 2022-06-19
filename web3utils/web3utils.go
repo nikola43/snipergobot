@@ -21,6 +21,7 @@ func InitWeb3(pk string) *web3helper.Web3GolangHelper {
 
 	rpcUrl := "https://speedy-nodes-nyc.moralis.io/84a2745d907034e6d388f8d6/bsc/testnet"
 	wsUrl := "wss://speedy-nodes-nyc.moralis.io/84a2745d907034e6d388f8d6/bsc/testnet/ws"
+
 	web3GolangHelper := web3helper.NewWeb3GolangHelper(rpcUrl, wsUrl, pk)
 
 	chainID, err := web3GolangHelper.HttpClient().NetworkID(context.Background())
