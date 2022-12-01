@@ -38,9 +38,6 @@ func main() {
 	//checkLicense()
 	createWalletFolder("wallets")
 
-	//tokenAddress := readUserContractAddressInput()
-	//lpAddress := readLpContractAddressInput()
-
 	tokenAddress := "0x1d61D38096f161410612b20D2c1080e5549dB3dd"
 	lpAddress := "0x140a1b90945fCB4C453846e6B147da7e36f1eeC0"
 
@@ -117,13 +114,15 @@ func checkTokens(db *gorm.DB, web3GolangHelper *web3helper.Web3GolangHelper) {
 	//fmt.Println("now", ParseDateTime(time.Now()))
 	events := make([]*models.EventsCatched, 0)
 	db.Joins("INNER JOIN lp_pairs ON lp_pairs.events_catched_id = events_catcheds.id").Where("lp_pairs.has_liquidity = ?", 0).Preload("LPPairs").Find(&events)
+	fmt.Println("events", events)
 	lo.ForEach(events, func(element *models.EventsCatched, _ int) {
 		hasLiquidity := web3utils.GetTokenInfo(db, web3GolangHelper, element.TokenAddress, element.LPPairs[0].LPAddress)
+		fmt.Println("hasLiquidity", hasLiquidity)
 		//menuutils.PrintTokenPriceInfo(element)
 		menuutils.PrintTokenStatus(element)
 		dbutils.UpdateTokenStatus(db, web3GolangHelper, element)
 		if hasLiquidity {
-			//checkTradingActive(element.TokenAddress, web3GolangHelper)
+			checkTradingActive(element.TokenAddress, web3GolangHelper)
 		}
 
 	})

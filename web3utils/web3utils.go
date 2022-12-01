@@ -19,8 +19,8 @@ var FactoryAddress = "0xB7926C0430Afb07AA7DEfDE6DA862aE0Bde767bc"
 
 func InitWeb3(pk string) *web3helper.Web3GolangHelper {
 
-	rpcUrl := "https://speedy-nodes-nyc.moralis.io/84a2745d907034e6d388f8d6/bsc/testnet"
-	wsUrl := "wss://speedy-nodes-nyc.moralis.io/84a2745d907034e6d388f8d6/bsc/testnet/ws"
+	rpcUrl := "https://rpc.ankr.com/bsc_testnet_chapel/8bb975b26860eb14a52028cf0094617967e250459efe5360f1029369b445e6c0"
+	wsUrl := "wss://rpc.ankr.com/bsc_testnet_chapel/ws/8bb975b26860eb14a52028cf0094617967e250459efe5360f1029369b445e6c0"
 
 	web3GolangHelper := web3helper.NewWeb3GolangHelper(rpcUrl, wsUrl, pk)
 
